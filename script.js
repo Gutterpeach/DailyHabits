@@ -7,9 +7,15 @@ const completedHabitList = document.getElementById('completed-habit-list');
 const completedSection = document.getElementById('completed-section');
 
 const modal = document.getElementById('habit-modal');
+const modalTitle = document.getElementById('modal-title');
+const editHabitIdInput = document.getElementById('edit-habit-id');
 const openModalBtn = document.getElementById('open-modal-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const saveHabitBtn = document.getElementById('save-habit-btn');
+const deleteHabitBtn = document.getElementById('delete-habit-btn');
+
+const nameInput = document.getElementById('habit-name');
+const targetInput = document.getElementById('habit-target');
 const freqSelect = document.getElementById('habit-freq');
 const daySelector = document.getElementById('day-selector');
 const dayBtns = document.querySelectorAll('.day-opt');
@@ -30,9 +36,65 @@ function getFrequencyLabel(habit) {
   if (habit.frequency === 'daily') return 'Daily';
   if (habit.frequency === 'weekly') return 'Weekly';
   if (habit.frequency === 'specific') {
-    return habit.days.length ? habit.days.join(', ') : 'Specific days';
+    return habit.days && habit.days.length ? habit.days.join(', ') : 'Specific days';
   }
   return '';
+}
+
+function selectEmoji(emojiChar) {
+  selectedEmoji = emojiChar;
+  emojiOptions.forEach(opt => {
+    if (opt.textContent.trim() === emojiChar) {
+      opt.classList.add('selected');
+    } else {
+      opt.classList.remove('selected');
+    }
+  });
+}
+
+function resetForm() {
+  editHabitIdInput.value = '';
+  modalTitle.textContent = 'New Habit';
+  nameInput.value = '';
+  targetInput.value = '1';
+  freqSelect.value = 'daily';
+  daySelector.classList.add('hidden');
+  selectedDays = [];
+  dayBtns.forEach(b => b.classList.remove('selected'));
+  selectEmoji('🌙');
+  deleteHabitBtn.classList.add('hidden');
+}
+
+function openEditModal(index) {
+  const habit = habits[index];
+  if (!habit) return;
+
+  editHabitIdInput.value = index;
+  modalTitle.textContent = 'Edit Habit';
+  nameInput.value = habit.name;
+  targetInput.value = habit.target || 1;
+  freqSelect.value = habit.frequency || 'daily';
+
+  if (habit.frequency === 'specific') {
+    daySelector.classList.remove('hidden');
+    selectedDays = habit.days ? [...habit.days] : [];
+    dayBtns.forEach(btn => {
+      const day = btn.getAttribute('data-day');
+      if (selectedDays.includes(day)) {
+        btn.classList.add('selected');
+      } else {
+        btn.classList.remove('selected');
+      }
+    });
+  } else {
+    daySelector.classList.add('hidden');
+    selectedDays = [];
+    dayBtns.forEach(b => b.classList.remove('selected'));
+  }
+
+  selectEmoji(habit.icon || '🌙');
+  deleteHabitBtn.classList.remove('hidden');
+  modal.classList.remove('hidden');
 }
 
 function renderHabits() {
@@ -51,7 +113,6 @@ function renderHabits() {
     card.className = `habit-card ${isCompleted ? 'completed-card' : ''}`;
     card.id = `habit-card-${index}`;
 
-    // Button label: shows ratio (e.g. 2/3) or checkmark when done
     let btnContent = '✓';
     if (target > 1) {
       btnContent = isCompleted ? '✓' : `${currentProgress}/${target}`;
@@ -62,12 +123,15 @@ function renderHabits() {
         <span class="habit-icon">${habit.icon}</span>
         <div class="habit-details">
           <h3>${habit.name}</h3>
-          <p>🔥 ${habit.streak} day streak • ${getFrequencyLabel(habit)}</p>
+          <p>🔥 ${habit.streak || 0} day streak • ${getFrequencyLabel(habit)}</p>
         </div>
       </div>
-      <button class="checkbox-btn ${isCompleted ? 'completed' : ''}" onclick="toggleHabit(${index})">
-        ${btnContent}
-      </button>
+      <div class="habit-actions-wrapper">
+        <button class="edit-btn" onclick="openEditModal(${index})" title="Edit Habit">✏️</button>
+        <button class="checkbox-btn ${isCompleted ? 'completed' : ''}" onclick="toggleHabit(${index})">
+          ${btnContent}
+        </button>
+      </div>
     `;
 
     if (isCompleted) {
@@ -93,33 +157,30 @@ function renderHabits() {
 function toggleHabit(index) {
   const habit = habits[index];
   if (!habit.logs) habit.logs = {};
+  if (!habit.completedDates) habit.completedDates = [];
 
   const target = habit.target || 1;
   let currentProgress = habit.logs[todayStr] || 0;
   const wasCompleted = currentProgress >= target;
 
   if (wasCompleted) {
-    // Reset back to 0 if tapped while completed
     habit.logs[todayStr] = 0;
     if (habit.completedDates.includes(todayStr)) {
       habit.completedDates = habit.completedDates.filter(d => d !== todayStr);
-      habit.streak = Math.max(0, habit.streak - 1);
+      habit.streak = Math.max(0, (habit.streak || 0) - 1);
     }
     saveToStorage();
     renderHabits();
   } else {
-    // Increment counter
     currentProgress += 1;
     habit.logs[todayStr] = currentProgress;
 
-    // Just completed it now
     if (currentProgress >= target) {
       if (!habit.completedDates.includes(todayStr)) {
         habit.completedDates.push(todayStr);
-        habit.streak += 1;
+        habit.streak = (habit.streak || 0) + 1;
       }
 
-      // Play swipe transition before moving to completed section
       const card = document.getElementById(`habit-card-${index}`);
       if (card) {
         card.classList.add('slide-out');
@@ -162,47 +223,71 @@ dayBtns.forEach(btn => {
 // Emoji selection
 emojiOptions.forEach(opt => {
   opt.addEventListener('click', () => {
-    emojiOptions.forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-    selectedEmoji = opt.textContent;
+    selectEmoji(opt.textContent.trim());
   });
 });
 
 // Modal controls
-openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+openModalBtn.addEventListener('click', () => {
+  resetForm();
+  modal.classList.remove('hidden');
+});
 
+cancelBtn.addEventListener('click', () => {
+  modal.classList.add('hidden');
+  resetForm();
+});
+
+// Delete Habit Handler
+deleteHabitBtn.addEventListener('click', () => {
+  const editIndex = editHabitIdInput.value;
+  if (editIndex !== '') {
+    habits.splice(parseInt(editIndex, 10), 1);
+    saveToStorage();
+    renderHabits();
+    modal.classList.add('hidden');
+    resetForm();
+  }
+});
+
+// Save Habit Handler (Handles both Create and Edit)
 saveHabitBtn.addEventListener('click', () => {
-  const nameInput = document.getElementById('habit-name');
-  const targetInput = document.getElementById('habit-target');
-
   if (!nameInput.value.trim()) return;
 
   const targetVal = parseInt(targetInput.value, 10) || 1;
+  const editIndex = editHabitIdInput.value;
 
-  const newHabit = {
-    name: nameInput.value.trim(),
-    icon: selectedEmoji,
-    frequency: freqSelect.value,
-    days: [...selectedDays],
-    target: targetVal,
-    streak: 0,
-    completedDates: [],
-    logs: {}
-  };
+  if (editIndex !== '') {
+    // Update existing habit
+    const index = parseInt(editIndex, 10);
+    habits[index] = {
+      ...habits[index],
+      name: nameInput.value.trim(),
+      icon: selectedEmoji,
+      frequency: freqSelect.value,
+      days: [...selectedDays],
+      target: targetVal
+    };
+  } else {
+    // Add new habit
+    const newHabit = {
+      name: nameInput.value.trim(),
+      icon: selectedEmoji,
+      frequency: freqSelect.value,
+      days: [...selectedDays],
+      target: targetVal,
+      streak: 0,
+      completedDates: [],
+      logs: {}
+    };
+    habits.push(newHabit);
+  }
 
-  habits.push(newHabit);
   saveToStorage();
   renderHabits();
 
-  // Reset Form
-  nameInput.value = '';
-  targetInput.value = '1';
-  selectedDays = [];
-  dayBtns.forEach(b => b.classList.remove('selected'));
-  freqSelect.value = 'daily';
-  daySelector.classList.add('hidden');
   modal.classList.add('hidden');
+  resetForm();
 });
 
 // Initial Render
