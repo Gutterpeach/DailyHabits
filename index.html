@@ -19,10 +19,8 @@
     </header>
 
     <main>
-      <!-- Active Habits -->
       <div id="active-habit-list" class="habit-list"></div>
 
-      <!-- Completed Section -->
       <div id="completed-section" class="completed-section hidden">
         <h2>Completed</h2>
         <div id="completed-habit-list" class="habit-list"></div>
@@ -30,10 +28,11 @@
     </main>
   </div>
 
-  <!-- Add Habit Modal -->
   <div id="habit-modal" class="modal hidden">
     <div class="modal-content">
-      <h2>New Habit</h2>
+      <h2 id="modal-title">New Habit</h2>
+      
+      <input type="hidden" id="edit-habit-id" value="" />
       
       <input type="text" id="habit-name" placeholder="Habit Name" required />
       
@@ -54,7 +53,6 @@
         <button type="button" class="day-opt" data-day="Sun">S</button>
       </div>
 
-      <!-- Times Per Day Target -->
       <label class="field-label">Target per day</label>
       <input type="number" id="habit-target" value="1" min="1" max="99" />
 
@@ -98,6 +96,8 @@
       </div>
 
       <div class="modal-actions">
+        <button id="delete-habit-btn" class="btn danger hidden">Delete</button>
+        
         <button id="cancel-btn" class="btn secondary">Cancel</button>
         <button id="save-habit-btn" class="btn primary">Save</button>
       </div>
