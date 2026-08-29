@@ -94,11 +94,13 @@ h1 {
   color: #4E6B51;
 }
 
-/* Actions on each card (Edit + Checkbox) */
+/* Actions on each card (Edit + Checkbox side-by-side) */
 .habit-actions-wrapper {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .edit-btn {
@@ -110,6 +112,9 @@ h1 {
   padding: 6px;
   border-radius: 50%;
   transition: opacity 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .edit-btn:hover {
@@ -284,7 +289,7 @@ h1 {
 .btn.danger {
   background-color: #C85A54;
   color: white;
-  margin-right: auto; /* Pushes the Delete button to the far left of the modal action bar */
+  margin-right: auto;
 }
 
 .btn.danger.hidden {
