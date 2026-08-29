@@ -1,3 +1,6 @@
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let selectedEmoji = '🌙';
 let selectedDays = [];
