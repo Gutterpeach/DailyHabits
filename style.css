@@ -23,7 +23,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 h1 {
@@ -40,6 +40,34 @@ h1 {
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
+}
+
+/* Tab Filter Bar */
+.tab-nav {
+  display: flex;
+  background: rgba(46, 74, 49, 0.15);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  border-radius: 8px;
+  color: #2E4A31;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tab-btn.active {
+  background-color: #2E4A31;
+  color: #FFFFFF;
 }
 
 .habit-list {
@@ -94,7 +122,7 @@ h1 {
   color: #4E6B51;
 }
 
-/* Actions on each card (Edit + Checkbox side-by-side) */
+/* Actions on each card */
 .habit-actions-wrapper {
   display: flex;
   flex-direction: row;
