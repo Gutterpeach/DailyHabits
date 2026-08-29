@@ -1,26 +1,29 @@
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let selectedEmoji = '🌙';
 let selectedDays = [];
-let editingHabitIndex = null;
 
-const habitList = document.getElementById('habit-list');
+const activeHabitList = document.getElementById('active-habit-list');
+const completedHabitList = document.getElementById('completed-habit-list');
+const completedSection = document.getElementById('completed-section');
+
 const modal = document.getElementById('habit-modal');
-const modalTitle = document.getElementById('modal-title');
 const openModalBtn = document.getElementById('open-modal-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const saveHabitBtn = document.getElementById('save-habit-btn');
 const freqSelect = document.getElementById('habit-freq');
 const daySelector = document.getElementById('day-selector');
 const dayBtns = document.querySelectorAll('.day-opt');
-const nameInput = document.getElementById('habit-name');
+const emojiOptions = document.querySelectorAll('.emoji-opt');
 
 const todayStr = new Date().toISOString().split('T')[0];
 
 function saveToStorage() {
   localStorage.setItem('daily_habits', JSON.stringify(habits));
+}
+
+function getTodayProgress(habit) {
+  if (!habit.logs) habit.logs = {};
+  return habit.logs[todayStr] || 0;
 }
 
 function getFrequencyLabel(habit) {
@@ -33,18 +36,27 @@ function getFrequencyLabel(habit) {
 }
 
 function renderHabits() {
-  habitList.innerHTML = '';
-  
-  if (habits.length === 0) {
-    habitList.innerHTML = `<p style="text-align: center; color: #FFFFFF;">No habits yet! Tap + to add one.</p>`;
-    return;
-  }
+  activeHabitList.innerHTML = '';
+  completedHabitList.innerHTML = '';
+
+  let activeCount = 0;
+  let completedCount = 0;
 
   habits.forEach((habit, index) => {
-    const isCompletedToday = habit.completedDates.includes(todayStr);
+    const target = habit.target || 1;
+    const currentProgress = getTodayProgress(habit);
+    const isCompleted = currentProgress >= target;
 
     const card = document.createElement('div');
-    card.className = 'habit-card';
+    card.className = `habit-card ${isCompleted ? 'completed-card' : ''}`;
+    card.id = `habit-card-${index}`;
+
+    // Button label: shows ratio (e.g. 2/3) or checkmark when done
+    let btnContent = '✓';
+    if (target > 1) {
+      btnContent = isCompleted ? '✓' : `${currentProgress}/${target}`;
+    }
+
     card.innerHTML = `
       <div class="habit-info">
         <span class="habit-icon">${habit.icon}</span>
@@ -53,101 +65,78 @@ function renderHabits() {
           <p>🔥 ${habit.streak} day streak • ${getFrequencyLabel(habit)}</p>
         </div>
       </div>
-      <div class="habit-actions">
-        <button class="action-btn" title="Edit" onclick="editHabit(${index})">✏️</button>
-        <button class="action-btn" title="Delete" onclick="deleteHabit(${index})">🗑️</button>
-        <button class="checkbox-btn ${isCompletedToday ? 'completed' : ''}" onclick="toggleHabit(${index})">
-          ${isCompletedToday ? '✓' : ''}
-        </button>
-      </div>
+      <button class="checkbox-btn ${isCompleted ? 'completed' : ''}" onclick="toggleHabit(${index})">
+        ${btnContent}
+      </button>
     `;
-    habitList.appendChild(card);
+
+    if (isCompleted) {
+      completedHabitList.appendChild(card);
+      completedCount++;
+    } else {
+      activeHabitList.appendChild(card);
+      activeCount++;
+    }
   });
-}
 
-// Toggle/Uncheck Habit
-function toggleHabit(index) {
-  const habit = habits[index];
-  const dateIndex = habit.completedDates.indexOf(todayStr);
-
-  if (dateIndex > -1) {
-    // Uncheck habit if already checked today
-    habit.completedDates.splice(dateIndex, 1);
-    habit.streak = Math.max(0, habit.streak - 1);
-  } else {
-    // Check habit
-    habit.completedDates.push(todayStr);
-    habit.streak += 1;
+  if (activeCount === 0 && completedCount === 0) {
+    activeHabitList.innerHTML = `<p style="text-align: center; color: #FFFFFF;">No habits yet! Tap + to add one.</p>`;
   }
 
-  saveToStorage();
-  renderHabits();
+  if (completedCount > 0) {
+    completedSection.classList.remove('hidden');
+  } else {
+    completedSection.classList.add('hidden');
+  }
 }
 
-// Delete Habit
-function deleteHabit(index) {
-  if (confirm(`Are you sure you want to delete "${habits[index].name}"?`)) {
-    habits.splice(index, 1);
+function toggleHabit(index) {
+  const habit = habits[index];
+  if (!habit.logs) habit.logs = {};
+
+  const target = habit.target || 1;
+  let currentProgress = habit.logs[todayStr] || 0;
+  const wasCompleted = currentProgress >= target;
+
+  if (wasCompleted) {
+    // Reset back to 0 if tapped while completed
+    habit.logs[todayStr] = 0;
+    if (habit.completedDates.includes(todayStr)) {
+      habit.completedDates = habit.completedDates.filter(d => d !== todayStr);
+      habit.streak = Math.max(0, habit.streak - 1);
+    }
+    saveToStorage();
+    renderHabits();
+  } else {
+    // Increment counter
+    currentProgress += 1;
+    habit.logs[todayStr] = currentProgress;
+
+    // Just completed it now
+    if (currentProgress >= target) {
+      if (!habit.completedDates.includes(todayStr)) {
+        habit.completedDates.push(todayStr);
+        habit.streak += 1;
+      }
+
+      // Play swipe transition before moving to completed section
+      const card = document.getElementById(`habit-card-${index}`);
+      if (card) {
+        card.classList.add('slide-out');
+        setTimeout(() => {
+          saveToStorage();
+          renderHabits();
+        }, 300);
+        return;
+      }
+    }
+
     saveToStorage();
     renderHabits();
   }
 }
 
-// Edit Habit Modal Setup
-function editHabit(index) {
-  editingHabitIndex = index;
-  const habit = habits[index];
-
-  modalTitle.textContent = 'Edit Habit';
-  nameInput.value = habit.name;
-  freqSelect.value = habit.frequency;
-  selectedDays = [...(habit.days || [])];
-
-  // Highlight days
-  dayBtns.forEach(btn => {
-    const day = btn.getAttribute('data-day');
-    if (selectedDays.includes(day)) {
-      btn.classList.add('selected');
-    } else {
-      btn.classList.remove('selected');
-    }
-  });
-
-  if (habit.frequency === 'specific') {
-    daySelector.classList.remove('hidden');
-  } else {
-    daySelector.classList.add('hidden');
-  }
-
-  // Highlight selected emoji
-  selectedEmoji = habit.icon;
-  document.querySelectorAll('.emoji-opt').forEach(opt => {
-    if (opt.textContent === selectedEmoji) {
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
-  });
-
-  modal.classList.remove('hidden');
-}
-
-// Setup Emoji Selection
-function setupEmojiPicker() {
-  const emojiOptions = document.querySelectorAll('.emoji-opt');
-  if (emojiOptions.length > 0) {
-    selectedEmoji = emojiOptions[0].textContent;
-  }
-  emojiOptions.forEach(opt => {
-    opt.addEventListener('click', () => {
-      emojiOptions.forEach(o => o.classList.remove('selected'));
-      opt.classList.add('selected');
-      selectedEmoji = opt.textContent;
-    });
-  });
-}
-
-// Frequency Dropdown Handler
+// Frequency Select Handler
 freqSelect.addEventListener('change', (e) => {
   if (e.target.value === 'specific') {
     daySelector.classList.remove('hidden');
@@ -170,55 +159,51 @@ dayBtns.forEach(btn => {
   });
 });
 
-// Modal controls
-openModalBtn.addEventListener('click', () => {
-  editingHabitIndex = null;
-  modalTitle.textContent = 'New Habit';
-  nameInput.value = '';
-  selectedDays = [];
-  dayBtns.forEach(b => b.classList.remove('selected'));
-  freqSelect.value = 'daily';
-  daySelector.classList.add('hidden');
-  modal.classList.remove('hidden');
+// Emoji selection
+emojiOptions.forEach(opt => {
+  opt.addEventListener('click', () => {
+    emojiOptions.forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selectedEmoji = opt.textContent;
+  });
 });
 
+// Modal controls
+openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
 cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
 
 saveHabitBtn.addEventListener('click', () => {
+  const nameInput = document.getElementById('habit-name');
+  const targetInput = document.getElementById('habit-target');
+
   if (!nameInput.value.trim()) return;
 
-  if (editingHabitIndex !== null) {
-    // Update existing habit
-    habits[editingHabitIndex].name = nameInput.value.trim();
-    habits[editingHabitIndex].icon = selectedEmoji;
-    habits[editingHabitIndex].frequency = freqSelect.value;
-    habits[editingHabitIndex].days = [...selectedDays];
-  } else {
-    // Create new habit
-    const newHabit = {
-      name: nameInput.value.trim(),
-      icon: selectedEmoji,
-      frequency: freqSelect.value,
-      days: [...selectedDays],
-      streak: 0,
-      completedDates: []
-    };
-    habits.push(newHabit);
-  }
+  const targetVal = parseInt(targetInput.value, 10) || 1;
 
+  const newHabit = {
+    name: nameInput.value.trim(),
+    icon: selectedEmoji,
+    frequency: freqSelect.value,
+    days: [...selectedDays],
+    target: targetVal,
+    streak: 0,
+    completedDates: [],
+    logs: {}
+  };
+
+  habits.push(newHabit);
   saveToStorage();
   renderHabits();
 
-  // Reset & Hide Modal
+  // Reset Form
   nameInput.value = '';
+  targetInput.value = '1';
   selectedDays = [];
-  editingHabitIndex = null;
   dayBtns.forEach(b => b.classList.remove('selected'));
   freqSelect.value = 'daily';
   daySelector.classList.add('hidden');
   modal.classList.add('hidden');
 });
 
-// Initial Setup & Render
-setupEmojiPicker();
+// Initial Render
 renderHabits();
