@@ -94,6 +94,29 @@ h1 {
   color: #4E6B51;
 }
 
+/* Actions on each card (Edit + Checkbox) */
+.habit-actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  opacity: 0.6;
+  padding: 6px;
+  border-radius: 50%;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.edit-btn:hover {
+  opacity: 1;
+  background-color: rgba(46, 74, 49, 0.1);
+}
+
 .checkbox-btn {
   background: transparent;
   border: 2px solid #2E4A31;
@@ -256,4 +279,14 @@ h1 {
 .btn.secondary {
   background-color: #E0E0E0;
   color: #4E6B51;
+}
+
+.btn.danger {
+  background-color: #C85A54;
+  color: white;
+  margin-right: auto; /* Pushes the Delete button to the far left of the modal action bar */
+}
+
+.btn.danger.hidden {
+  display: none;
 }
