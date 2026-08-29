@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>Habits</h1>
+      <button id="open-modal-btn" class="add-btn">+</button>
+    </header>
+
+    <main id="habit-list" class="habit-list">
+      <!-- Habit cards render here dynamically -->
+    </main>
+  </div>
+
+  <!-- Add/Edit Habit Modal -->
+  <div id="habit-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title">New Habit</h2>
+      
+      <input type="text" id="habit-name" placeholder="Habit Name" required />
+      
+      <label class="field-label">Frequency</label>
+      <select id="habit-freq">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="specific">Specific Days</option>
+      </select>
+
+      <!-- Day selector -->
+      <div id="day-selector" class="day-selector hidden">
+        <button type="button" class="day-opt" data-day="Mon">M</button>
+        <button type="button" class="day-opt" data-day="Tue">T</button>
+        <button type="button" class="day-opt" data-day="Wed">W</button>
+        <button type="button" class="day-opt" data-day="Thu">T</button>
+        <button type="button" class="day-opt" data-day="Fri">F</button>
+        <button type="button" class="day-opt" data-day="Sat">S</button>
+        <button type="button" class="day-opt" data-day="Sun">S</button>
+      </div>
+
+      <label class="field-label">Choose Icon</label>
+      <div class="emoji-picker" id="emoji-picker">
+        <span class="emoji-opt selected">🌙</span>
+        <span class="emoji-opt">💧</span>
+        <span class="emoji-opt">🌸</span>
+        <span class="emoji-opt">🌲</span>
+        <span class="emoji-opt">🍱</span>
+        <span class="emoji-opt">🚴‍♀️</span>
+        <span class="emoji-opt">🤸‍♀️</span>
+        <span class="emoji-opt">🏋️‍♀️</span>
+        <span class="emoji-opt">🧩</span>
+        <span class="emoji-opt">🧘‍♀️</span>
+        <span class="emoji-opt">📸</span>
+        <span class="emoji-opt">💻</span>
+        <span class="emoji-opt">🚿</span>
+        <span class="emoji-opt">🪥</span>
+        <span class="emoji-opt">🛏️</span>
+        <span class="emoji-opt">💅🏻</span>
+        <span class="emoji-opt">🐾</span>
+        <span class="emoji-opt">🥘</span>
+        <span class="emoji-opt">🌄</span>
+        <span class="emoji-opt">🌃</span>
+        <span class="emoji-opt">✨️</span>
+        <span class="emoji-opt">🔮</span>
+        <span class="emoji-opt">🎮</span>
+        <span class="emoji-opt">🎨</span>
+        <span class="emoji-opt">🎶</span>
+        <span class="emoji-opt">🕯</span>
+        <span class="emoji-opt">💊</span>
+        <span class="emoji-opt">🧽</span>
+        <span class="emoji-opt">🧹</span>
+        <span class="emoji-opt">✍️</span>
+        <span class="emoji-opt">🫧</span>
+        <span class="emoji-opt">🗓</span>
+        <span class="emoji-opt">📖</span>
+        <span class="emoji-opt">📚</span>
+        <span class="emoji-opt">📑</span>
+        <span class="emoji-opt">📓</span>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancel-btn" class="btn secondary">Cancel</button>
+        <button id="save-habit-btn" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js" charset="UTF-8"></script>
+</body>
+</html>
