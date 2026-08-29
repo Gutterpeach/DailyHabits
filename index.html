@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Habit Tracker</title>
-
-  <!-- App Icon Links -->
-  <link rel="icon" type="image/png" href="icon.png">
-  <link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2E4A31">
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,17 +18,24 @@
       <button id="open-modal-btn" class="add-btn">+</button>
     </header>
 
-    <main id="habit-list" class="habit-list">
-      <!-- Habit cards render here dynamically -->
+    <main>
+      <!-- Active Habits -->
+      <div id="active-habit-list" class="habit-list"></div>
+
+      <!-- Completed Section -->
+      <div id="completed-section" class="completed-section hidden">
+        <h2>Completed</h2>
+        <div id="completed-habit-list" class="habit-list"></div>
+      </div>
     </main>
   </div>
 
-  <!-- Add/Edit Habit Modal -->
+  <!-- Add Habit Modal -->
   <div id="habit-modal" class="modal hidden">
     <div class="modal-content">
-      <h2 id="modal-title">New Habit</h2>
+      <h2>New Habit</h2>
       
-      <input type="text" id="habit-name" placeholder="Habit Name" autocomplete="off" required />
+      <input type="text" id="habit-name" placeholder="Habit Name" required />
       
       <label class="field-label">Frequency</label>
       <select id="habit-freq">
@@ -38,7 +44,6 @@
         <option value="specific">Specific Days</option>
       </select>
 
-      <!-- Day selector -->
       <div id="day-selector" class="day-selector hidden">
         <button type="button" class="day-opt" data-day="Mon">M</button>
         <button type="button" class="day-opt" data-day="Tue">T</button>
@@ -48,6 +53,10 @@
         <button type="button" class="day-opt" data-day="Sat">S</button>
         <button type="button" class="day-opt" data-day="Sun">S</button>
       </div>
+
+      <!-- Times Per Day Target -->
+      <label class="field-label">Target per day</label>
+      <input type="number" id="habit-target" value="1" min="1" max="99" />
 
       <label class="field-label">Choose Icon</label>
       <div class="emoji-picker" id="emoji-picker">
@@ -64,8 +73,6 @@
         <span class="emoji-opt">📸</span>
         <span class="emoji-opt">💻</span>
         <span class="emoji-opt">🚿</span>
-        <span class="emoji-opt">🪥</span>
-        <span class="emoji-opt">🛏️</span>
         <span class="emoji-opt">💅🏻</span>
         <span class="emoji-opt">🐾</span>
         <span class="emoji-opt">🥘</span>
@@ -80,7 +87,7 @@
         <span class="emoji-opt">💊</span>
         <span class="emoji-opt">🧽</span>
         <span class="emoji-opt">🧹</span>
-        <span class="emoji-opt">✍️</span>
+        <span class="emoji-opt">✍️🏻</span>
         <span class="emoji-opt">🫧</span>
         <span class="emoji-opt">🗓</span>
         <span class="emoji-opt">📖</span>
@@ -96,6 +103,13 @@
     </div>
   </div>
 
-  <script src="script.js" charset="UTF-8"></script>
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch((err) => console.log('SW registration failed:', err));
+    }
+  </script>
 </body>
 </html>
