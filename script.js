@@ -1,6 +1,7 @@
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let selectedEmoji = '🌙';
 let selectedDays = [];
+let activeTab = 'all'; // Tracks currently selected tab
 
 const activeHabitList = document.getElementById('active-habit-list');
 const completedHabitList = document.getElementById('completed-habit-list');
@@ -21,7 +22,34 @@ const daySelector = document.getElementById('day-selector');
 const dayBtns = document.querySelectorAll('.day-opt');
 const emojiOptions = document.querySelectorAll('.emoji-opt');
 
-const todayStr = new Date().toISOString().split('T')[0];
+const tabBtns = document.querySelectorAll('.tab-btn');
+
+// --- Time-frame Helpers ---
+function getDailyKey() {
+  return new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+}
+
+function getWeeklyKey() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Thursday of current week
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getFullYear()}-W${weekNo}`; // "YYYY-W35"
+}
+
+function getMonthlyKey() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`; // "YYYY-MM"
+}
+
+function getHabitLogKey(habit) {
+  if (habit.frequency === 'weekly') return getWeeklyKey();
+  if (habit.frequency === 'monthly') return getMonthlyKey();
+  return getDailyKey();
+}
 
 function saveToStorage() {
   localStorage.setItem('daily_habits', JSON.stringify(habits));
@@ -29,12 +57,14 @@ function saveToStorage() {
 
 function getTodayProgress(habit) {
   if (!habit.logs) habit.logs = {};
-  return habit.logs[todayStr] || 0;
+  const key = getHabitLogKey(habit);
+  return habit.logs[key] || 0;
 }
 
 function getFrequencyLabel(habit) {
   if (habit.frequency === 'daily') return 'Daily';
   if (habit.frequency === 'weekly') return 'Weekly';
+  if (habit.frequency === 'monthly') return 'Monthly';
   if (habit.frequency === 'specific') {
     return habit.days && habit.days.length ? habit.days.join(', ') : 'Specific days';
   }
@@ -105,6 +135,11 @@ function renderHabits() {
   let completedCount = 0;
 
   habits.forEach((habit, index) => {
+    // Filter habits based on selected Tab
+    if (activeTab === 'daily' && habit.frequency !== 'daily' && habit.frequency !== 'specific') return;
+    if (activeTab === 'weekly' && habit.frequency !== 'weekly') return;
+    if (activeTab === 'monthly' && habit.frequency !== 'monthly') return;
+
     const target = habit.target || 1;
     const currentProgress = getTodayProgress(habit);
     const isCompleted = currentProgress >= target;
@@ -123,11 +158,11 @@ function renderHabits() {
         <span class="habit-icon">${habit.icon}</span>
         <div class="habit-details">
           <h3>${habit.name}</h3>
-          <p>🔥 ${habit.streak || 0} day streak • ${getFrequencyLabel(habit)}</p>
+          <p>🔥 ${habit.streak || 0} streak • ${getFrequencyLabel(habit)}</p>
         </div>
       </div>
       <div class="habit-actions-wrapper">
-        <button class="edit-btn" onclick="openEditModal(${index})" title="Edit Habit">✏️</button>
+        <button class="edit-btn" onclick="openEditModal(${index})">✏️</button>
         <button class="checkbox-btn ${isCompleted ? 'completed' : ''}" onclick="toggleHabit(${index})">
           ${btnContent}
         </button>
@@ -144,7 +179,7 @@ function renderHabits() {
   });
 
   if (activeCount === 0 && completedCount === 0) {
-    activeHabitList.innerHTML = `<p style="text-align: center; color: #FFFFFF;">No habits yet! Tap + to add one.</p>`;
+    activeHabitList.innerHTML = `<p style="text-align: center; color: #FFFFFF;">No habits found for this section!</p>`;
   }
 
   if (completedCount > 0) {
@@ -159,25 +194,26 @@ function toggleHabit(index) {
   if (!habit.logs) habit.logs = {};
   if (!habit.completedDates) habit.completedDates = [];
 
+  const logKey = getHabitLogKey(habit);
   const target = habit.target || 1;
-  let currentProgress = habit.logs[todayStr] || 0;
+  let currentProgress = habit.logs[logKey] || 0;
   const wasCompleted = currentProgress >= target;
 
   if (wasCompleted) {
-    habit.logs[todayStr] = 0;
-    if (habit.completedDates.includes(todayStr)) {
-      habit.completedDates = habit.completedDates.filter(d => d !== todayStr);
+    habit.logs[logKey] = 0;
+    if (habit.completedDates.includes(logKey)) {
+      habit.completedDates = habit.completedDates.filter(d => d !== logKey);
       habit.streak = Math.max(0, (habit.streak || 0) - 1);
     }
     saveToStorage();
     renderHabits();
   } else {
     currentProgress += 1;
-    habit.logs[todayStr] = currentProgress;
+    habit.logs[logKey] = currentProgress;
 
     if (currentProgress >= target) {
-      if (!habit.completedDates.includes(todayStr)) {
-        habit.completedDates.push(todayStr);
+      if (!habit.completedDates.includes(logKey)) {
+        habit.completedDates.push(logKey);
         habit.streak = (habit.streak || 0) + 1;
       }
 
@@ -196,6 +232,16 @@ function toggleHabit(index) {
     renderHabits();
   }
 }
+
+// Tab Switching Listener
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = btn.getAttribute('data-tab');
+    renderHabits();
+  });
+});
 
 // Frequency Select Handler
 freqSelect.addEventListener('change', (e) => {
@@ -250,7 +296,7 @@ deleteHabitBtn.addEventListener('click', () => {
   }
 });
 
-// Save Habit Handler (Handles both Create and Edit)
+// Save Habit Handler
 saveHabitBtn.addEventListener('click', () => {
   if (!nameInput.value.trim()) return;
 
@@ -258,7 +304,6 @@ saveHabitBtn.addEventListener('click', () => {
   const editIndex = editHabitIdInput.value;
 
   if (editIndex !== '') {
-    // Update existing habit
     const index = parseInt(editIndex, 10);
     habits[index] = {
       ...habits[index],
@@ -269,7 +314,6 @@ saveHabitBtn.addEventListener('click', () => {
       target: targetVal
     };
   } else {
-    // Add new habit
     const newHabit = {
       name: nameInput.value.trim(),
       icon: selectedEmoji,
