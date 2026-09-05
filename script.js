@@ -1,11 +1,19 @@
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let selectedEmoji = '🌙';
 let selectedDays = [];
-let activeTab = 'all'; // Tracks currently selected tab
+let activeTab = 'all'; 
+
+// Active selected date state
+let selectedDate = new Date();
 
 const activeHabitList = document.getElementById('active-habit-list');
 const completedHabitList = document.getElementById('completed-habit-list');
 const completedSection = document.getElementById('completed-section');
+
+const dateDisplayLabel = document.getElementById('date-display-label');
+const prevDateBtn = document.getElementById('prev-date-btn');
+const nextDateBtn = document.getElementById('next-date-btn');
+const todayShortcutBtn = document.getElementById('today-shortcut-btn');
 
 const modal = document.getElementById('habit-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -24,31 +32,72 @@ const emojiOptions = document.querySelectorAll('.emoji-opt');
 
 const tabBtns = document.querySelectorAll('.tab-btn');
 
-// --- Time-frame Helpers ---
-function getDailyKey() {
-  return new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+// --- Time-frame Helpers (Dynamic to selectedDate) ---
+function getDailyKey(targetDate = selectedDate) {
+  const year = targetDate.getFullYear();
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const day = String(targetDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; // "YYYY-MM-DD"
 }
 
-function getWeeklyKey() {
-  const d = new Date();
+function getWeeklyKey(targetDate = selectedDate) {
+  const d = new Date(targetDate.getTime());
   d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Thursday of current week
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
   const yearStart = new Date(d.getFullYear(), 0, 1);
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return `${d.getFullYear()}-W${weekNo}`; // "YYYY-W35"
 }
 
-function getMonthlyKey() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
+function getMonthlyKey(targetDate = selectedDate) {
+  const year = targetDate.getFullYear();
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
   return `${year}-${month}`; // "YYYY-MM"
 }
 
-function getHabitLogKey(habit) {
-  if (habit.frequency === 'weekly') return getWeeklyKey();
-  if (habit.frequency === 'monthly') return getMonthlyKey();
-  return getDailyKey();
+function getHabitLogKey(habit, targetDate = selectedDate) {
+  if (habit.frequency === 'weekly') return getWeeklyKey(targetDate);
+  if (habit.frequency === 'monthly') return getMonthlyKey(targetDate);
+  return getDailyKey(targetDate);
+}
+
+function isToday(date) {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+}
+
+function updateDateHeader() {
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  if (isToday(selectedDate)) {
+    dateDisplayLabel.textContent = 'Today';
+    todayShortcutBtn.classList.add('hidden');
+  } else if (
+    selectedDate.getDate() === yesterday.getDate() &&
+    selectedDate.getMonth() === yesterday.getMonth() &&
+    selectedDate.getFullYear() === yesterday.getFullYear()
+  ) {
+    dateDisplayLabel.textContent = 'Yesterday';
+    todayShortcutBtn.classList.remove('hidden');
+  } else if (
+    selectedDate.getDate() === tomorrow.getDate() &&
+    selectedDate.getMonth() === tomorrow.getMonth() &&
+    selectedDate.getFullYear() === tomorrow.getFullYear()
+  ) {
+    dateDisplayLabel.textContent = 'Tomorrow';
+    todayShortcutBtn.classList.remove('hidden');
+  } else {
+    const options = { weekday: 'short', day: 'numeric', month: 'short' };
+    dateDisplayLabel.textContent = selectedDate.toLocaleDateString('en-GB', options);
+    todayShortcutBtn.classList.remove('hidden');
+  }
 }
 
 function saveToStorage() {
@@ -128,6 +177,7 @@ function openEditModal(index) {
 }
 
 function renderHabits() {
+  updateDateHeader();
   activeHabitList.innerHTML = '';
   completedHabitList.innerHTML = '';
 
@@ -135,7 +185,7 @@ function renderHabits() {
   let completedCount = 0;
 
   habits.forEach((habit, index) => {
-    // Filter habits based on selected Tab
+    // Filter by frequency tab
     if (activeTab === 'daily' && habit.frequency !== 'daily' && habit.frequency !== 'specific') return;
     if (activeTab === 'weekly' && habit.frequency !== 'weekly') return;
     if (activeTab === 'monthly' && habit.frequency !== 'monthly') return;
@@ -214,6 +264,8 @@ function toggleHabit(index) {
     if (currentProgress >= target) {
       if (!habit.completedDates.includes(logKey)) {
         habit.completedDates.push(logKey);
+        
+        // Increment streak if updating today or a past date
         habit.streak = (habit.streak || 0) + 1;
       }
 
@@ -232,6 +284,22 @@ function toggleHabit(index) {
     renderHabits();
   }
 }
+
+// Date Navigation Listeners
+prevDateBtn.addEventListener('click', () => {
+  selectedDate.setDate(selectedDate.getDate() - 1);
+  renderHabits();
+});
+
+nextDateBtn.addEventListener('click', () => {
+  selectedDate.setDate(selectedDate.getDate() + 1);
+  renderHabits();
+});
+
+todayShortcutBtn.addEventListener('click', () => {
+  selectedDate = new Date();
+  renderHabits();
+});
 
 // Tab Switching Listener
 tabBtns.forEach(btn => {
