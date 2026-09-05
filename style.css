@@ -23,7 +23,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 h1 {
@@ -40,6 +40,55 @@ h1 {
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
+}
+
+/* Date Navigator Bar */
+.date-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.nav-arrow-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2E4A31;
+  cursor: pointer;
+  padding: 0 12px;
+  line-height: 1;
+}
+
+.date-display-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.date-label {
+  font-size: 15px;
+  font-weight: bold;
+  color: #2E4A31;
+}
+
+.today-btn {
+  background: transparent;
+  border: none;
+  color: #2E4A31;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.today-btn.hidden {
+  display: none;
 }
 
 /* Tab Filter Bar */
