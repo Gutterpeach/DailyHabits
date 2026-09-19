@@ -13,42 +13,126 @@
 <body>
 
   <div class="app-container">
-    <header>
-      <h1>Habits</h1>
-      <button id="open-modal-btn" class="add-btn">+</button>
-    </header>
 
-    <!-- Date Navigation Bar -->
-    <div class="date-navigator">
-      <button id="prev-date-btn" class="nav-arrow-btn">‹</button>
-      <div class="date-display-wrapper">
-        <span id="date-display-label" class="date-label">Today</span>
-        <button id="today-shortcut-btn" class="today-btn hidden">Go to Today</button>
+    <!-- ==================== TAB 1: HABITS VIEW ==================== -->
+    <div id="view-habits" class="tab-view active">
+      <header>
+        <h1>Habits</h1>
+        <button id="open-modal-btn" class="add-btn">+</button>
+      </header>
+
+      <!-- Date Navigation Bar -->
+      <div class="date-navigator">
+        <button id="prev-date-btn" class="nav-arrow-btn">‹</button>
+        <div class="date-display-wrapper">
+          <span id="date-display-label" class="date-label">Today</span>
+          <button id="today-shortcut-btn" class="today-btn hidden">Go to Today</button>
+        </div>
+        <button id="next-date-btn" class="nav-arrow-btn">›</button>
       </div>
-      <button id="next-date-btn" class="nav-arrow-btn">›</button>
+
+      <!-- Frequency Filter Tabs -->
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="daily">Daily</button>
+        <button class="tab-btn" data-tab="weekly">Weekly</button>
+        <button class="tab-btn" data-tab="monthly">Monthly</button>
+      </nav>
+
+      <main>
+        <!-- Active Habits -->
+        <div id="active-habit-list" class="habit-list"></div>
+
+        <!-- Completed Section -->
+        <div id="completed-section" class="completed-section hidden">
+          <h2>Completed</h2>
+          <div id="completed-habit-list" class="habit-list"></div>
+        </div>
+      </main>
     </div>
 
-    <!-- Frequency Filter Tabs -->
-    <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="all">All</button>
-      <button class="tab-btn" data-tab="daily">Daily</button>
-      <button class="tab-btn" data-tab="weekly">Weekly</button>
-      <button class="tab-btn" data-tab="monthly">Monthly</button>
-    </nav>
+    <!-- ==================== TAB 2: TO-DO VIEW ==================== -->
+    <div id="view-todo" class="tab-view hidden">
+      <header>
+        <h1>To-Do List</h1>
+      </header>
 
-    <main>
-      <!-- Active Habits -->
-      <div id="active-habit-list" class="habit-list"></div>
+      <!-- Daily / Weekly Sub-tabs -->
+      <nav class="tab-nav">
+        <button class="todo-type-btn active" data-todo-type="daily">Daily</button>
+        <button class="todo-type-btn" data-todo-type="weekly">Weekly</button>
+      </nav>
 
-      <!-- Completed Section -->
-      <div id="completed-section" class="completed-section hidden">
-        <h2>Completed</h2>
-        <div id="completed-habit-list" class="habit-list"></div>
+      <!-- Add New Task Input Bar -->
+      <div class="todo-input-group">
+        <input type="text" id="todo-input" placeholder="Add a new task..." />
+        <button id="add-todo-btn" class="btn primary">+</button>
       </div>
-    </main>
-  </div>
 
-  <!-- Add / Edit Habit Modal -->
+      <!-- Active Tasks -->
+      <div id="todo-list" class="todo-list"></div>
+
+      <!-- Completed Tasks Section -->
+      <div id="todo-completed-section" class="completed-section hidden">
+        <h2>Completed Tasks</h2>
+        <div id="todo-completed-list" class="todo-list"></div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: IDEAL DAY VIEW ==================== -->
+    <div id="view-ideal-day" class="tab-view hidden">
+      <header>
+        <h1>My Ideal Day</h1>
+      </header>
+
+      <div class="ideal-day-container">
+        <!-- Vision / Paragraph Section -->
+        <div class="ideal-card">
+          <label class="field-label" for="ideal-vision-text">Daily Vision & Mood</label>
+          <textarea id="ideal-vision-text" rows="4" placeholder="Describe what you would like your ideal day to look like..."></textarea>
+        </div>
+
+        <!-- Photo Section -->
+        <div class="ideal-card">
+          <label class="field-label">Inspiration Photo</label>
+          <div class="photo-upload-wrapper">
+            <input type="file" id="ideal-photo-input" accept="image/*" class="hidden-file-input" />
+            <button id="upload-photo-btn" class="btn secondary">Choose Photo</button>
+            <button id="remove-photo-btn" class="btn danger hidden">Remove</button>
+          </div>
+          <div id="ideal-photo-preview" class="photo-preview-container hidden">
+            <img id="ideal-photo-img" src="" alt="Ideal Day Inspiration" />
+          </div>
+        </div>
+
+        <!-- Planned Habits Checklist Section -->
+        <div class="ideal-card">
+          <label class="field-label">Habits for My Ideal Day</label>
+          <p class="field-sublabel">Select the habits you want to include in this ideal routine:</p>
+          <div id="ideal-habit-checklist" class="ideal-checklist"></div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /.app-container -->
+
+  <!-- ==================== MAIN BOTTOM NAVIGATION ==================== -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" data-view="view-habits">
+      <span class="nav-icon">✨</span>
+      <span class="nav-label">Habits</span>
+    </button>
+    <button class="nav-tab" data-view="view-todo">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">To-Do</span>
+    </button>
+    <button class="nav-tab" data-view="view-ideal-day">
+      <span class="nav-icon">🌿</span>
+      <span class="nav-label">Ideal Day</span>
+    </button>
+  </nav>
+
+  <!-- Add / Edit Habit Modal (Untouched) -->
   <div id="habit-modal" class="modal hidden">
     <div class="modal-content">
       <h2 id="modal-title">New Habit</h2>
