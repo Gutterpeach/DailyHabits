@@ -11,12 +11,17 @@ body {
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px 20px 80px 20px; /* Added extra bottom padding for bottom nav */
 }
 
 .app-container {
   width: 100%;
   max-width: 480px;
+}
+
+/* Views Management */
+.tab-view.hidden {
+  display: none;
 }
 
 header {
@@ -101,7 +106,7 @@ h1 {
   gap: 4px;
 }
 
-.tab-btn {
+.tab-btn, .todo-type-btn {
   flex: 1;
   background: transparent;
   border: none;
@@ -114,18 +119,18 @@ h1 {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tab-btn.active {
+.tab-btn.active, .todo-type-btn.active {
   background-color: #2E4A31;
   color: #FFFFFF;
 }
 
-.habit-list {
+.habit-list, .todo-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.habit-card {
+.habit-card, .todo-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -137,16 +142,17 @@ h1 {
 }
 
 /* Slide animation for completion */
-.habit-card.slide-out {
+.habit-card.slide-out, .todo-card.slide-out {
   transform: translateX(100%);
   opacity: 0;
 }
 
-.habit-card.completed-card {
+.habit-card.completed-card, .todo-card.completed-card {
   opacity: 0.65;
 }
 
-.habit-card.completed-card .habit-details h3 {
+.habit-card.completed-card .habit-details h3,
+.todo-card.completed-card .todo-title {
   text-decoration: line-through;
   color: #4E6B51;
 }
@@ -161,7 +167,7 @@ h1 {
   font-size: 24px;
 }
 
-.habit-details h3 {
+.habit-details h3, .todo-title {
   font-size: 16px;
   color: #2E4A31;
 }
@@ -172,7 +178,7 @@ h1 {
 }
 
 /* Actions on each card */
-.habit-actions-wrapper {
+.habit-actions-wrapper, .todo-actions-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -180,7 +186,7 @@ h1 {
   gap: 10px;
 }
 
-.edit-btn {
+.edit-btn, .delete-todo-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -194,7 +200,7 @@ h1 {
   justify-content: center;
 }
 
-.edit-btn:hover {
+.edit-btn:hover, .delete-todo-btn:hover {
   opacity: 1;
   background-color: rgba(46, 74, 49, 0.1);
 }
@@ -246,6 +252,7 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  z-index: 2000;
 }
 
 .modal.hidden {
@@ -274,6 +281,12 @@ h1 {
   font-weight: 600;
   color: #2E4A31;
   margin-top: 4px;
+}
+
+.field-sublabel {
+  font-size: 12px;
+  color: #4E6B51;
+  margin-bottom: 8px;
 }
 
 .modal-content input, .modal-content select {
@@ -371,4 +384,168 @@ h1 {
 
 .btn.danger.hidden {
   display: none;
+}
+
+/* ==================== BOTTOM NAVIGATION BAR ==================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  border-top: 1px solid rgba(46, 74, 49, 0.15);
+  z-index: 1000;
+}
+
+.nav-tab {
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #4E6B51;
+  cursor: pointer;
+  padding: 4px 16px;
+  border-radius: 8px;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-tab .nav-icon {
+  font-size: 20px;
+}
+
+.nav-tab .nav-label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nav-tab.active {
+  color: #2E4A31;
+  font-weight: bold;
+}
+
+/* ==================== TO-DO VIEW STYLES ==================== */
+.todo-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.todo-input-group input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  color: #2E4A31;
+}
+
+.todo-input-group input:focus {
+  outline: 2px solid #2E4A31;
+}
+
+.todo-input-group button {
+  font-size: 20px;
+  padding: 0 18px;
+  border-radius: 12px;
+}
+
+/* Inline Edit Input for To-Do */
+.todo-edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #2E4A31;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+/* ==================== IDEAL DAY STYLES ==================== */
+.ideal-day-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ideal-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ideal-card textarea {
+  width: 100%;
+  border: 1px solid #6E9671;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  color: #2E4A31;
+  resize: vertical;
+}
+
+.photo-upload-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.photo-preview-container {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 220px;
+}
+
+.photo-preview-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.photo-preview-container.hidden {
+  display: none;
+}
+
+.ideal-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ideal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ideal-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2E4A31;
+  cursor: pointer;
+}
+
+.ideal-item span {
+  font-size: 14px;
+  color: #2E4A31;
+  font-weight: 500;
 }
