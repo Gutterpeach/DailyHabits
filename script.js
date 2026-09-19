@@ -1,11 +1,21 @@
+// --- DATA STORAGE & GLOBAL STATE ---
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
+let todos = JSON.parse(localStorage.getItem('daily_todos')) || [];
+let idealDayData = JSON.parse(localStorage.getItem('ideal_day_data')) || {
+  vision: '',
+  photo: '',
+  selectedHabits: []
+};
+
 let selectedEmoji = '🌙';
 let selectedDays = [];
 let activeTab = 'all'; 
+let activeTodoTab = 'daily'; // 'daily' or 'weekly'
 
-// Active selected date state
+// Active selected date state for Habits
 let selectedDate = new Date();
 
+// --- DOM ELEMENTS: HABITS ---
 const activeHabitList = document.getElementById('active-habit-list');
 const completedHabitList = document.getElementById('completed-habit-list');
 const completedSection = document.getElementById('completed-section');
@@ -32,12 +42,50 @@ const emojiOptions = document.querySelectorAll('.emoji-opt');
 
 const tabBtns = document.querySelectorAll('.tab-btn');
 
-// --- Time-frame Helpers (Dynamic to selectedDate) ---
+// --- DOM ELEMENTS: NAVIGATION VIEWS ---
+const navTabs = document.querySelectorAll('.nav-tab');
+const tabViews = document.querySelectorAll('.tab-view');
+
+// --- DOM ELEMENTS: TO-DO VIEW ---
+const todoTypeBtns = document.querySelectorAll('.todo-type-btn');
+const todoInput = document.getElementById('todo-input');
+const addTodoBtn = document.getElementById('add-todo-btn');
+const todoList = document.getElementById('todo-list');
+const todoCompletedSection = document.getElementById('todo-completed-section');
+const todoCompletedList = document.getElementById('todo-completed-list');
+
+// --- DOM ELEMENTS: IDEAL DAY VIEW ---
+const idealVisionText = document.getElementById('ideal-vision-text');
+const idealPhotoInput = document.getElementById('ideal-photo-input');
+const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+const removePhotoBtn = document.getElementById('remove-photo-btn');
+const idealPhotoPreview = document.getElementById('ideal-photo-preview');
+const idealPhotoImg = document.getElementById('ideal-photo-img');
+const idealHabitChecklist = document.getElementById('ideal-habit-checklist');
+
+// ==================== BOTTOM NAV VIEW SWITCHING ====================
+navTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    navTabs.forEach(t => t.classList.remove('active'));
+    tabViews.forEach(v => v.classList.add('hidden'));
+
+    tab.classList.add('active');
+    const targetViewId = tab.getAttribute('data-view');
+    document.getElementById(targetViewId).classList.remove('hidden');
+
+    if (targetViewId === 'view-ideal-day') {
+      renderIdealDayView();
+    }
+  });
+});
+
+// ==================== HABITS MODULE ====================
+
 function getDailyKey(targetDate = selectedDate) {
   const year = targetDate.getFullYear();
   const month = String(targetDate.getMonth() + 1).padStart(2, '0');
   const day = String(targetDate.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`; // "YYYY-MM-DD"
+  return `${year}-${month}-${day}`;
 }
 
 function getWeeklyKey(targetDate = selectedDate) {
@@ -46,13 +94,13 @@ function getWeeklyKey(targetDate = selectedDate) {
   d.setDate(d.getDate() + 4 - (d.getDay() || 7));
   const yearStart = new Date(d.getFullYear(), 0, 1);
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return `${d.getFullYear()}-W${weekNo}`; // "YYYY-W35"
+  return `${d.getFullYear()}-W${weekNo}`;
 }
 
 function getMonthlyKey(targetDate = selectedDate) {
   const year = targetDate.getFullYear();
   const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`; // "YYYY-MM"
+  return `${year}-${month}`;
 }
 
 function getHabitLogKey(habit, targetDate = selectedDate) {
@@ -185,7 +233,6 @@ function renderHabits() {
   let completedCount = 0;
 
   habits.forEach((habit, index) => {
-    // Filter by frequency tab
     if (activeTab === 'daily' && habit.frequency !== 'daily' && habit.frequency !== 'specific') return;
     if (activeTab === 'weekly' && habit.frequency !== 'weekly') return;
     if (activeTab === 'monthly' && habit.frequency !== 'monthly') return;
@@ -264,8 +311,6 @@ function toggleHabit(index) {
     if (currentProgress >= target) {
       if (!habit.completedDates.includes(logKey)) {
         habit.completedDates.push(logKey);
-        
-        // Increment streak if updating today or a past date
         habit.streak = (habit.streak || 0) + 1;
       }
 
@@ -285,7 +330,7 @@ function toggleHabit(index) {
   }
 }
 
-// Date Navigation Listeners
+// Habits Event Listeners
 prevDateBtn.addEventListener('click', () => {
   selectedDate.setDate(selectedDate.getDate() - 1);
   renderHabits();
@@ -301,7 +346,6 @@ todayShortcutBtn.addEventListener('click', () => {
   renderHabits();
 });
 
-// Tab Switching Listener
 tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     tabBtns.forEach(b => b.classList.remove('active'));
@@ -311,7 +355,6 @@ tabBtns.forEach(btn => {
   });
 });
 
-// Frequency Select Handler
 freqSelect.addEventListener('change', (e) => {
   if (e.target.value === 'specific') {
     daySelector.classList.remove('hidden');
@@ -320,7 +363,6 @@ freqSelect.addEventListener('change', (e) => {
   }
 });
 
-// Day Selector Button Toggles
 dayBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const day = btn.getAttribute('data-day');
@@ -334,14 +376,12 @@ dayBtns.forEach(btn => {
   });
 });
 
-// Emoji selection
 emojiOptions.forEach(opt => {
   opt.addEventListener('click', () => {
     selectEmoji(opt.textContent.trim());
   });
 });
 
-// Modal controls
 openModalBtn.addEventListener('click', () => {
   resetForm();
   modal.classList.remove('hidden');
@@ -352,7 +392,6 @@ cancelBtn.addEventListener('click', () => {
   resetForm();
 });
 
-// Delete Habit Handler
 deleteHabitBtn.addEventListener('click', () => {
   const editIndex = editHabitIdInput.value;
   if (editIndex !== '') {
@@ -364,7 +403,6 @@ deleteHabitBtn.addEventListener('click', () => {
   }
 });
 
-// Save Habit Handler
 saveHabitBtn.addEventListener('click', () => {
   if (!nameInput.value.trim()) return;
 
@@ -402,5 +440,209 @@ saveHabitBtn.addEventListener('click', () => {
   resetForm();
 });
 
-// Initial Render
+// ==================== TO-DO MODULE ====================
+
+function saveTodos() {
+  localStorage.setItem('daily_todos', JSON.stringify(todos));
+}
+
+function renderTodos() {
+  todoList.innerHTML = '';
+  todoCompletedList.innerHTML = '';
+
+  let activeCount = 0;
+  let completedCount = 0;
+
+  todos.forEach((todo, index) => {
+    if (todo.type !== activeTodoTab) return;
+
+    const card = document.createElement('div');
+    card.className = `todo-card ${todo.completed ? 'completed-card' : ''}`;
+    card.id = `todo-card-${index}`;
+
+    card.innerHTML = `
+      <span class="todo-title" id="todo-text-${index}">${escapeHtml(todo.text)}</span>
+      <div class="todo-actions-wrapper">
+        <button class="edit-btn" onclick="startEditingTodo(${index})">✏️</button>
+        <button class="delete-todo-btn" onclick="deleteTodo(${index})">🗑️</button>
+        <button class="checkbox-btn ${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${index})">
+          ${todo.completed ? '✓' : ''}
+        </button>
+      </div>
+    `;
+
+    if (todo.completed) {
+      todoCompletedList.appendChild(card);
+      completedCount++;
+    } else {
+      todoList.appendChild(card);
+      activeCount++;
+    }
+  });
+
+  if (activeCount === 0 && completedCount === 0) {
+    todoList.innerHTML = `<p style="text-align: center; color: #FFFFFF;">No ${activeTodoTab} tasks yet!</p>`;
+  }
+
+  if (completedCount > 0) {
+    todoCompletedSection.classList.remove('hidden');
+  } else {
+    todoCompletedSection.classList.add('hidden');
+  }
+}
+
+function addTodo() {
+  const text = todoInput.value.trim();
+  if (!text) return;
+
+  todos.push({
+    id: Date.now(),
+    text: text,
+    type: activeTodoTab,
+    completed: false
+  });
+
+  todoInput.value = '';
+  saveTodos();
+  renderTodos();
+}
+
+function toggleTodo(index) {
+  todos[index].completed = !todos[index].completed;
+  saveTodos();
+  renderTodos();
+}
+
+function deleteTodo(index) {
+  todos.splice(index, 1);
+  saveTodos();
+  renderTodos();
+}
+
+function startEditingTodo(index) {
+  const textSpan = document.getElementById(`todo-text-${index}`);
+  if (!textSpan) return;
+
+  const currentText = todos[index].text;
+  textSpan.innerHTML = `
+    <input type="text" class="todo-edit-input" id="edit-todo-input-${index}" value="${escapeHtml(currentText)}" />
+  `;
+
+  const input = document.getElementById(`edit-todo-input-${index}`);
+  input.focus();
+
+  const saveEdit = () => {
+    const updatedText = input.value.trim();
+    if (updatedText) {
+      todos[index].text = updatedText;
+      saveTodos();
+    }
+    renderTodos();
+  };
+
+  input.addEventListener('blur', saveEdit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveEdit();
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// To-Do Listeners
+todoTypeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    todoTypeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTodoTab = btn.getAttribute('data-todo-type');
+    renderTodos();
+  });
+});
+
+addTodoBtn.addEventListener('click', addTodo);
+todoInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addTodo();
+});
+
+// ==================== IDEAL DAY MODULE ====================
+
+function saveIdealDayData() {
+  localStorage.setItem('ideal_day_data', JSON.stringify(idealDayData));
+}
+
+function renderIdealDayView() {
+  idealVisionText.value = idealDayData.vision || '';
+
+  if (idealDayData.photo) {
+    idealPhotoImg.src = idealDayData.photo;
+    idealPhotoPreview.classList.remove('hidden');
+    removePhotoBtn.classList.remove('hidden');
+  } else {
+    idealPhotoPreview.classList.add('hidden');
+    removePhotoBtn.classList.add('hidden');
+  }
+
+  // Render Habits checklist
+  idealHabitChecklist.innerHTML = '';
+  if (habits.length === 0) {
+    idealHabitChecklist.innerHTML = `<p style="color: #4E6B51; font-size: 13px;">No habits created yet! Add habits in the Habits tab first.</p>`;
+    return;
+  }
+
+  habits.forEach((habit, index) => {
+    const isChecked = (idealDayData.selectedHabits || []).includes(habit.name);
+    const item = document.createElement('label');
+    item.className = 'ideal-item';
+    item.innerHTML = `
+      <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleIdealHabit('${escapeHtml(habit.name)}')">
+      <span>${habit.icon} ${escapeHtml(habit.name)}</span>
+    `;
+    idealHabitChecklist.appendChild(item);
+  });
+}
+
+function toggleIdealHabit(habitName) {
+  if (!idealDayData.selectedHabits) idealDayData.selectedHabits = [];
+  
+  if (idealDayData.selectedHabits.includes(habitName)) {
+    idealDayData.selectedHabits = idealDayData.selectedHabits.filter(h => h !== habitName);
+  } else {
+    idealDayData.selectedHabits.push(habitName);
+  }
+  saveIdealDayData();
+}
+
+idealVisionText.addEventListener('input', () => {
+  idealDayData.vision = idealVisionText.value;
+  saveIdealDayData();
+});
+
+uploadPhotoBtn.addEventListener('click', () => {
+  idealPhotoInput.click();
+});
+
+idealPhotoInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      idealDayData.photo = event.target.result;
+      saveIdealDayData();
+      renderIdealDayView();
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+removePhotoBtn.addEventListener('click', () => {
+  idealDayData.photo = '';
+  idealPhotoInput.value = '';
+  saveIdealDayData();
+  renderIdealDayView();
+});
+
+// ==================== INITIALIZATION ====================
 renderHabits();
+renderTodos();
+renderIdealDayView();
