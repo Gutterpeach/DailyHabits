@@ -79,9 +79,28 @@
     <div id="view-ideal-day" class="tab-view hidden">
       <header>
         <h1>My Ideal Day</h1>
+        <div class="header-actions">
+          <button id="edit-ideal-btn" class="add-btn" style="font-size: 16px;">✏️</button>
+          <button id="clear-ideal-btn" class="add-btn danger-icon hidden" style="font-size: 16px;">🗑️</button>
+        </div>
       </header>
 
-      <div class="ideal-day-container">
+      <!-- VIEW MODE (Saved State) -->
+      <div id="ideal-display-mode" class="ideal-day-container">
+        <div id="ideal-display-card" class="ideal-card">
+          <p id="ideal-display-vision" class="ideal-text-display">No vision added yet. Tap ✏️ to edit!</p>
+          <div id="ideal-display-photo-container" class="photo-preview-container hidden">
+            <img id="ideal-display-photo" src="" alt="Ideal Day Inspiration" />
+          </div>
+          <div id="ideal-display-habits-container" style="margin-top: 12px;">
+            <label class="field-label" style="margin-bottom: 8px; display: block;">Ideal Habits:</label>
+            <div id="ideal-display-habits-list" class="ideal-checklist"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDIT MODE (Form State) -->
+      <div id="ideal-edit-mode" class="ideal-day-container hidden">
         <div class="ideal-card">
           <label class="field-label" for="ideal-vision-text">Daily Vision & Mood</label>
           <textarea id="ideal-vision-text" rows="4" placeholder="Describe what you would like your ideal day to look like..."></textarea>
@@ -104,6 +123,8 @@
           <p class="field-sublabel">Select the habits you want to include in this ideal routine:</p>
           <div id="ideal-habit-checklist" class="ideal-checklist"></div>
         </div>
+
+        <button id="save-ideal-btn" class="btn primary" style="width: 100%; margin-top: 8px;">Save Ideal Day</button>
       </div>
     </div>
 
