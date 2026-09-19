@@ -1,11 +1,6 @@
 // --- GLOBAL DATA ---
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let todos = JSON.parse(localStorage.getItem('daily_todos')) || [];
-let idealDayData = JSON.parse(localStorage.getItem('ideal_day_data')) || {
-  vision: '',
-  photo: '',
-  selectedHabits: []
-};
 
 let selectedEmoji = '🌙';
 let selectedDays = [];
@@ -34,9 +29,7 @@ window.switchView = function(targetViewId) {
     }
   });
 
-  if (targetViewId === 'view-ideal-day') {
-    renderIdealDayView();
-  } else if (targetViewId === 'view-todo') {
+  if (targetViewId === 'view-todo') {
     renderTodos();
   } else if (targetViewId === 'view-habits') {
     renderHabits();
@@ -75,27 +68,6 @@ const addTodoBtn = document.getElementById('add-todo-btn');
 const todoList = document.getElementById('todo-list');
 const todoCompletedSection = document.getElementById('todo-completed-section');
 const todoCompletedList = document.getElementById('todo-completed-list');
-
-// DOM Elements: Ideal Day
-const idealVisionText = document.getElementById('ideal-vision-text');
-const idealPhotoInput = document.getElementById('ideal-photo-input');
-const uploadPhotoBtn = document.getElementById('upload-photo-btn');
-const removePhotoBtn = document.getElementById('remove-photo-btn');
-const idealPhotoPreview = document.getElementById('ideal-photo-preview');
-const idealPhotoImg = document.getElementById('ideal-photo-img');
-const idealHabitChecklist = document.getElementById('ideal-habit-checklist');
-
-const idealDisplayMode = document.getElementById('ideal-display-mode');
-const idealEditMode = document.getElementById('ideal-edit-mode');
-const idealDisplayVision = document.getElementById('ideal-display-vision');
-const idealDisplayPhotoContainer = document.getElementById('ideal-display-photo-container');
-const idealDisplayPhoto = document.getElementById('ideal-display-photo');
-const idealDisplayHabitsList = document.getElementById('ideal-display-habits-list');
-const idealHabitsLabel = document.getElementById('ideal-habits-label');
-
-const editIdealBtn = document.getElementById('edit-ideal-btn');
-const clearIdealBtn = document.getElementById('clear-ideal-btn');
-const saveIdealBtn = document.getElementById('save-ideal-btn');
 
 // --- HABITS MODULE ---
 function getDailyKey(targetDate = selectedDate) {
@@ -574,157 +546,6 @@ if (todoInput) {
   });
 }
 
-// --- IDEAL DAY MODULE ---
-let isIdealEditMode = false;
-
-function saveIdealDayData() {
-  localStorage.setItem('ideal_day_data', JSON.stringify(idealDayData));
-}
-
-function renderIdealDayView() {
-  if (!idealDisplayMode || !idealEditMode) return;
-
-  if (isIdealEditMode) {
-    // Render Edit Mode
-    idealDisplayMode.classList.add('hidden');
-    idealEditMode.classList.remove('hidden');
-    editIdealBtn.classList.add('hidden');
-    if (clearIdealBtn) clearIdealBtn.classList.remove('hidden');
-
-    idealVisionText.value = idealDayData.vision || '';
-
-    if (idealDayData.photo && idealPhotoImg) {
-      idealPhotoImg.src = idealDayData.photo;
-      idealPhotoPreview.classList.remove('hidden');
-      removePhotoBtn.classList.remove('hidden');
-    } else {
-      if (idealPhotoPreview) idealPhotoPreview.classList.add('hidden');
-      if (removePhotoBtn) removePhotoBtn.classList.add('hidden');
-    }
-
-    // Render Edit Checklist
-    idealHabitChecklist.innerHTML = '';
-    if (habits.length === 0) {
-      idealHabitChecklist.innerHTML = `<p style="color: #4E6B51; font-size: 13px;">No habits created yet! Add habits in the Habits tab first.</p>`;
-    } else {
-      habits.forEach((habit) => {
-        const isChecked = (idealDayData.selectedHabits || []).includes(habit.name);
-        const item = document.createElement('label');
-        item.className = 'ideal-item';
-        item.innerHTML = `
-          <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleIdealHabit('${escapeHtml(habit.name)}')">
-          <span>${habit.icon} ${escapeHtml(habit.name)}</span>
-        `;
-        idealHabitChecklist.appendChild(item);
-      });
-    }
-
-  } else {
-    // Render View Mode (Saved)
-    idealEditMode.classList.add('hidden');
-    idealDisplayMode.classList.remove('hidden');
-    editIdealBtn.classList.remove('hidden');
-    if (clearIdealBtn) clearIdealBtn.classList.add('hidden');
-
-    // Display Vision Text (Empty if none)
-    idealDisplayVision.textContent = idealDayData.vision || '';
-
-    // Display Photo
-    if (idealDayData.photo) {
-      idealDisplayPhoto.src = idealDayData.photo;
-      idealDisplayPhotoContainer.classList.remove('hidden');
-    } else {
-      idealDisplayPhotoContainer.classList.add('hidden');
-    }
-
-    // Display Selected Habits Only
-    idealDisplayHabitsList.innerHTML = '';
-    const selectedList = idealDayData.selectedHabits || [];
-    const matchedHabits = habits.filter(h => selectedList.includes(h.name));
-
-    if (matchedHabits.length > 0) {
-      if (idealHabitsLabel) idealHabitsLabel.classList.remove('hidden');
-      matchedHabits.forEach(habit => {
-        const item = document.createElement('div');
-        item.className = 'ideal-display-habit-item';
-        item.innerHTML = `<span>${habit.icon}</span> <span>${escapeHtml(habit.name)}</span>`;
-        idealDisplayHabitsList.appendChild(item);
-      });
-    } else {
-      if (idealHabitsLabel) idealHabitsLabel.classList.add('hidden');
-    }
-  }
-}
-
-window.toggleIdealHabit = function(habitName) {
-  if (!idealDayData.selectedHabits) idealDayData.selectedHabits = [];
-  
-  if (idealDayData.selectedHabits.includes(habitName)) {
-    idealDayData.selectedHabits = idealDayData.selectedHabits.filter(h => h !== habitName);
-  } else {
-    idealDayData.selectedHabits.push(habitName);
-  }
-  saveIdealDayData();
-};
-
-if (editIdealBtn) {
-  editIdealBtn.addEventListener('click', () => {
-    isIdealEditMode = true;
-    renderIdealDayView();
-  });
-}
-
-if (saveIdealBtn) {
-  saveIdealBtn.addEventListener('click', () => {
-    idealDayData.vision = idealVisionText.value;
-    saveIdealDayData();
-    isIdealEditMode = false;
-    renderIdealDayView();
-  });
-}
-
-if (clearIdealBtn) {
-  clearIdealBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to delete your ideal day setup?')) {
-      idealDayData = { vision: '', photo: '', selectedHabits: [] };
-      saveIdealDayData();
-      isIdealEditMode = false;
-      renderIdealDayView();
-    }
-  });
-}
-
-if (uploadPhotoBtn) {
-  uploadPhotoBtn.addEventListener('click', () => {
-    if (idealPhotoInput) idealPhotoInput.click();
-  });
-}
-
-if (idealPhotoInput) {
-  idealPhotoInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        idealDayData.photo = event.target.result;
-        saveIdealDayData();
-        renderIdealDayView();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-}
-
-if (removePhotoBtn) {
-  removePhotoBtn.addEventListener('click', () => {
-    idealDayData.photo = '';
-    if (idealPhotoInput) idealPhotoInput.value = '';
-    saveIdealDayData();
-    renderIdealDayView();
-  });
-}
-
 // Initial render
 renderHabits();
 renderTodos();
-renderIdealDayView();
