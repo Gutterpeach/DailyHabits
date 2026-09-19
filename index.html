@@ -75,59 +75,6 @@
       </div>
     </div>
 
-    <!-- TAB 3: IDEAL DAY VIEW -->
-    <div id="view-ideal-day" class="tab-view hidden">
-      <header>
-        <h1>My Ideal Day</h1>
-        <div class="header-actions">
-          <button id="edit-ideal-btn" class="add-btn" style="font-size: 16px;">✏️</button>
-          <button id="clear-ideal-btn" class="add-btn danger-icon hidden" style="font-size: 16px;">🗑️</button>
-        </div>
-      </header>
-
-      <!-- VIEW MODE (Saved State) -->
-      <div id="ideal-display-mode" class="ideal-day-container">
-        <div id="ideal-display-card" class="ideal-card">
-          <p id="ideal-display-vision" class="ideal-text-display"></p>
-          <div id="ideal-display-photo-container" class="photo-preview-container hidden">
-            <img id="ideal-display-photo" src="" alt="Ideal Day Inspiration" />
-          </div>
-          <div id="ideal-display-habits-container">
-            <label id="ideal-habits-label" class="field-label hidden" style="margin-bottom: 8px; display: block;">Ideal Habits:</label>
-            <div id="ideal-display-habits-list" class="ideal-checklist"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EDIT MODE (Form State) -->
-      <div id="ideal-edit-mode" class="ideal-day-container hidden">
-        <div class="ideal-card">
-          <label class="field-label" for="ideal-vision-text">Daily Vision & Mood</label>
-          <textarea id="ideal-vision-text" rows="4" placeholder="Describe what you would like your ideal day to look like..."></textarea>
-        </div>
-
-        <div class="ideal-card">
-          <label class="field-label">Inspiration Photo</label>
-          <div class="photo-upload-wrapper">
-            <input type="file" id="ideal-photo-input" accept="image/*" class="hidden-file-input" />
-            <button id="upload-photo-btn" class="btn secondary">Choose Photo</button>
-            <button id="remove-photo-btn" class="btn danger hidden">Remove</button>
-          </div>
-          <div id="ideal-photo-preview" class="photo-preview-container hidden">
-            <img id="ideal-photo-img" src="" alt="Ideal Day Inspiration" />
-          </div>
-        </div>
-
-        <div class="ideal-card">
-          <label class="field-label">Habits for My Ideal Day</label>
-          <p class="field-sublabel">Select the habits you want to include in this ideal routine:</p>
-          <div id="ideal-habit-checklist" class="ideal-checklist"></div>
-        </div>
-
-        <button id="save-ideal-btn" class="btn primary" style="width: 100%; margin-top: 8px;">Save Ideal Day</button>
-      </div>
-    </div>
-
   </div> <!-- /.app-container -->
 
   <!-- BOTTOM NAVIGATION BAR -->
@@ -140,10 +87,6 @@
       <span class="nav-icon">📝</span>
       <span class="nav-label">To-Do</span>
     </button>
-    <button type="button" class="nav-tab" data-view="view-ideal-day" onclick="switchView('view-ideal-day')">
-      <span class="nav-icon">🌿</span>
-      <span class="nav-label">Ideal Day</span>
-    </button>
   </nav>
 
   <!-- Add / Edit Habit Modal -->
@@ -152,7 +95,6 @@
       <h2 id="modal-title">New Habit</h2>
       
       <input type="hidden" id="edit-habit-id" value="" />
-      
       <input type="text" id="habit-name" placeholder="Habit Name" required />
       
       <label class="field-label">Frequency</label>
