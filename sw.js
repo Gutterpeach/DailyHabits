@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-tracker-v7';
+const CACHE_NAME = 'habit-tracker-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  self.skipWaiting(); // Instantly activates the new worker
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
@@ -18,7 +18,6 @@ self.addEventListener('install', (e) => {
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((res) => {
-      // Return cached version or fetch from network
       return res || fetch(e.request);
     })
   );
@@ -37,5 +36,5 @@ self.addEventListener('activate', (e) => {
       );
     })
   );
-  return self.clients.claim(); // Immediately takes control of open pages
+  return self.clients.claim();
 });
