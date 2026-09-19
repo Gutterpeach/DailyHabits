@@ -10,9 +10,8 @@ let idealDayData = JSON.parse(localStorage.getItem('ideal_day_data')) || {
 let selectedEmoji = '🌙';
 let selectedDays = [];
 let activeTab = 'all'; 
-let activeTodoTab = 'daily'; // 'daily' or 'weekly'
+let activeTodoTab = 'daily'; 
 
-// Active selected date state for Habits
 let selectedDate = new Date();
 
 // --- DOM ELEMENTS: HABITS ---
@@ -64,17 +63,38 @@ const idealPhotoImg = document.getElementById('ideal-photo-img');
 const idealHabitChecklist = document.getElementById('ideal-habit-checklist');
 
 // ==================== BOTTOM NAV VIEW SWITCHING ====================
+function switchView(targetViewId) {
+  navTabs.forEach(tab => {
+    if (tab.getAttribute('data-view') === targetViewId) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  tabViews.forEach(view => {
+    if (view.id === targetViewId) {
+      view.classList.remove('hidden');
+    } else {
+      view.classList.add('hidden');
+    }
+  });
+
+  if (targetViewId === 'view-ideal-day') {
+    renderIdealDayView();
+  } else if (targetViewId === 'view-todo') {
+    renderTodos();
+  } else if (targetViewId === 'view-habits') {
+    renderHabits();
+  }
+}
+
 navTabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    navTabs.forEach(t => t.classList.remove('active'));
-    tabViews.forEach(v => v.classList.add('hidden'));
-
-    tab.classList.add('active');
+  tab.addEventListener('click', (e) => {
+    e.preventDefault();
     const targetViewId = tab.getAttribute('data-view');
-    document.getElementById(targetViewId).classList.remove('hidden');
-
-    if (targetViewId === 'view-ideal-day') {
-      renderIdealDayView();
+    if (targetViewId) {
+      switchView(targetViewId);
     }
   });
 });
@@ -117,6 +137,7 @@ function isToday(date) {
 }
 
 function updateDateHeader() {
+  if (!dateDisplayLabel || !todayShortcutBtn) return;
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
@@ -180,6 +201,7 @@ function selectEmoji(emojiChar) {
 }
 
 function resetForm() {
+  if (!editHabitIdInput) return;
   editHabitIdInput.value = '';
   modalTitle.textContent = 'New Habit';
   nameInput.value = '';
@@ -225,6 +247,7 @@ function openEditModal(index) {
 }
 
 function renderHabits() {
+  if (!activeHabitList || !completedHabitList) return;
   updateDateHeader();
   activeHabitList.innerHTML = '';
   completedHabitList.innerHTML = '';
@@ -254,7 +277,7 @@ function renderHabits() {
       <div class="habit-info">
         <span class="habit-icon">${habit.icon}</span>
         <div class="habit-details">
-          <h3>${habit.name}</h3>
+          <h3>${escapeHtml(habit.name)}</h3>
           <p>🔥 ${habit.streak || 0} streak • ${getFrequencyLabel(habit)}</p>
         </div>
       </div>
@@ -331,20 +354,9 @@ function toggleHabit(index) {
 }
 
 // Habits Event Listeners
-prevDateBtn.addEventListener('click', () => {
-  selectedDate.setDate(selectedDate.getDate() - 1);
-  renderHabits();
-});
-
-nextDateBtn.addEventListener('click', () => {
-  selectedDate.setDate(selectedDate.getDate() + 1);
-  renderHabits();
-});
-
-todayShortcutBtn.addEventListener('click', () => {
-  selectedDate = new Date();
-  renderHabits();
-});
+if (prevDateBtn) prevDateBtn.addEventListener('click', () => { selectedDate.setDate(selectedDate.getDate() - 1); renderHabits(); });
+if (nextDateBtn) nextDateBtn.addEventListener('click', () => { selectedDate.setDate(selectedDate.getDate() + 1); renderHabits(); });
+if (todayShortcutBtn) todayShortcutBtn.addEventListener('click', () => { selectedDate = new Date(); renderHabits(); });
 
 tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -355,19 +367,20 @@ tabBtns.forEach(btn => {
   });
 });
 
-freqSelect.addEventListener('change', (e) => {
-  if (e.target.value === 'specific') {
-    daySelector.classList.remove('hidden');
-  } else {
-    daySelector.classList.add('hidden');
-  }
-});
+if (freqSelect) {
+  freqSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'specific') {
+      daySelector.classList.remove('hidden');
+    } else {
+      daySelector.classList.add('hidden');
+    }
+  });
+}
 
 dayBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const day = btn.getAttribute('data-day');
     btn.classList.toggle('selected');
-    
     if (selectedDays.includes(day)) {
       selectedDays = selectedDays.filter(d => d !== day);
     } else {
@@ -382,63 +395,59 @@ emojiOptions.forEach(opt => {
   });
 });
 
-openModalBtn.addEventListener('click', () => {
-  resetForm();
-  modal.classList.remove('hidden');
-});
+if (openModalBtn) openModalBtn.addEventListener('click', () => { resetForm(); modal.classList.remove('hidden'); });
+if (cancelBtn) cancelBtn.addEventListener('click', () => { modal.classList.add('hidden'); resetForm(); });
 
-cancelBtn.addEventListener('click', () => {
-  modal.classList.add('hidden');
-  resetForm();
-});
+if (deleteHabitBtn) {
+  deleteHabitBtn.addEventListener('click', () => {
+    const editIndex = editHabitIdInput.value;
+    if (editIndex !== '') {
+      habits.splice(parseInt(editIndex, 10), 1);
+      saveToStorage();
+      renderHabits();
+      modal.classList.add('hidden');
+      resetForm();
+    }
+  });
+}
 
-deleteHabitBtn.addEventListener('click', () => {
-  const editIndex = editHabitIdInput.value;
-  if (editIndex !== '') {
-    habits.splice(parseInt(editIndex, 10), 1);
+if (saveHabitBtn) {
+  saveHabitBtn.addEventListener('click', () => {
+    if (!nameInput.value.trim()) return;
+
+    const targetVal = parseInt(targetInput.value, 10) || 1;
+    const editIndex = editHabitIdInput.value;
+
+    if (editIndex !== '') {
+      const index = parseInt(editIndex, 10);
+      habits[index] = {
+        ...habits[index],
+        name: nameInput.value.trim(),
+        icon: selectedEmoji,
+        frequency: freqSelect.value,
+        days: [...selectedDays],
+        target: targetVal
+      };
+    } else {
+      const newHabit = {
+        name: nameInput.value.trim(),
+        icon: selectedEmoji,
+        frequency: freqSelect.value,
+        days: [...selectedDays],
+        target: targetVal,
+        streak: 0,
+        completedDates: [],
+        logs: {}
+      };
+      habits.push(newHabit);
+    }
+
     saveToStorage();
     renderHabits();
     modal.classList.add('hidden');
     resetForm();
-  }
-});
-
-saveHabitBtn.addEventListener('click', () => {
-  if (!nameInput.value.trim()) return;
-
-  const targetVal = parseInt(targetInput.value, 10) || 1;
-  const editIndex = editHabitIdInput.value;
-
-  if (editIndex !== '') {
-    const index = parseInt(editIndex, 10);
-    habits[index] = {
-      ...habits[index],
-      name: nameInput.value.trim(),
-      icon: selectedEmoji,
-      frequency: freqSelect.value,
-      days: [...selectedDays],
-      target: targetVal
-    };
-  } else {
-    const newHabit = {
-      name: nameInput.value.trim(),
-      icon: selectedEmoji,
-      frequency: freqSelect.value,
-      days: [...selectedDays],
-      target: targetVal,
-      streak: 0,
-      completedDates: [],
-      logs: {}
-    };
-    habits.push(newHabit);
-  }
-
-  saveToStorage();
-  renderHabits();
-
-  modal.classList.add('hidden');
-  resetForm();
-});
+  });
+}
 
 // ==================== TO-DO MODULE ====================
 
@@ -447,6 +456,7 @@ function saveTodos() {
 }
 
 function renderTodos() {
+  if (!todoList || !todoCompletedList) return;
   todoList.innerHTML = '';
   todoCompletedList.innerHTML = '';
 
@@ -492,6 +502,7 @@ function renderTodos() {
 }
 
 function addTodo() {
+  if (!todoInput) return;
   const text = todoInput.value.trim();
   if (!text) return;
 
@@ -529,28 +540,29 @@ function startEditingTodo(index) {
   `;
 
   const input = document.getElementById(`edit-todo-input-${index}`);
-  input.focus();
+  if (input) {
+    input.focus();
+    const saveEdit = () => {
+      const updatedText = input.value.trim();
+      if (updatedText) {
+        todos[index].text = updatedText;
+        saveTodos();
+      }
+      renderTodos();
+    };
 
-  const saveEdit = () => {
-    const updatedText = input.value.trim();
-    if (updatedText) {
-      todos[index].text = updatedText;
-      saveTodos();
-    }
-    renderTodos();
-  };
-
-  input.addEventListener('blur', saveEdit);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') saveEdit();
-  });
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveEdit();
+    });
+  }
 }
 
 function escapeHtml(str) {
+  if (!str) return '';
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// To-Do Listeners
 todoTypeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     todoTypeBtns.forEach(b => b.classList.remove('active'));
@@ -560,10 +572,12 @@ todoTypeBtns.forEach(btn => {
   });
 });
 
-addTodoBtn.addEventListener('click', addTodo);
-todoInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addTodo();
-});
+if (addTodoBtn) addTodoBtn.addEventListener('click', addTodo);
+if (todoInput) {
+  todoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addTodo();
+  });
+}
 
 // ==================== IDEAL DAY MODULE ====================
 
@@ -572,25 +586,26 @@ function saveIdealDayData() {
 }
 
 function renderIdealDayView() {
+  if (!idealVisionText || !idealHabitChecklist) return;
+
   idealVisionText.value = idealDayData.vision || '';
 
-  if (idealDayData.photo) {
+  if (idealDayData.photo && idealPhotoImg) {
     idealPhotoImg.src = idealDayData.photo;
     idealPhotoPreview.classList.remove('hidden');
     removePhotoBtn.classList.remove('hidden');
   } else {
-    idealPhotoPreview.classList.add('hidden');
-    removePhotoBtn.classList.add('hidden');
+    if (idealPhotoPreview) idealPhotoPreview.classList.add('hidden');
+    if (removePhotoBtn) removePhotoBtn.classList.add('hidden');
   }
 
-  // Render Habits checklist
   idealHabitChecklist.innerHTML = '';
   if (habits.length === 0) {
     idealHabitChecklist.innerHTML = `<p style="color: #4E6B51; font-size: 13px;">No habits created yet! Add habits in the Habits tab first.</p>`;
     return;
   }
 
-  habits.forEach((habit, index) => {
+  habits.forEach((habit) => {
     const isChecked = (idealDayData.selectedHabits || []).includes(habit.name);
     const item = document.createElement('label');
     item.className = 'ideal-item';
@@ -613,34 +628,42 @@ function toggleIdealHabit(habitName) {
   saveIdealDayData();
 }
 
-idealVisionText.addEventListener('input', () => {
-  idealDayData.vision = idealVisionText.value;
-  saveIdealDayData();
-});
+if (idealVisionText) {
+  idealVisionText.addEventListener('input', () => {
+    idealDayData.vision = idealVisionText.value;
+    saveIdealDayData();
+  });
+}
 
-uploadPhotoBtn.addEventListener('click', () => {
-  idealPhotoInput.click();
-});
+if (uploadPhotoBtn) {
+  uploadPhotoBtn.addEventListener('click', () => {
+    if (idealPhotoInput) idealPhotoInput.click();
+  });
+}
 
-idealPhotoInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      idealDayData.photo = event.target.result;
-      saveIdealDayData();
-      renderIdealDayView();
-    };
-    reader.readAsDataURL(file);
-  }
-});
+if (idealPhotoInput) {
+  idealPhotoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        idealDayData.photo = event.target.result;
+        saveIdealDayData();
+        renderIdealDayView();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
-removePhotoBtn.addEventListener('click', () => {
-  idealDayData.photo = '';
-  idealPhotoInput.value = '';
-  saveIdealDayData();
-  renderIdealDayView();
-});
+if (removePhotoBtn) {
+  removePhotoBtn.addEventListener('click', () => {
+    idealDayData.photo = '';
+    if (idealPhotoInput) idealPhotoInput.value = '';
+    saveIdealDayData();
+    renderIdealDayView();
+  });
+}
 
 // ==================== INITIALIZATION ====================
 renderHabits();
