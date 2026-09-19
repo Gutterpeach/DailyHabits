@@ -91,6 +91,7 @@ const idealDisplayVision = document.getElementById('ideal-display-vision');
 const idealDisplayPhotoContainer = document.getElementById('ideal-display-photo-container');
 const idealDisplayPhoto = document.getElementById('ideal-display-photo');
 const idealDisplayHabitsList = document.getElementById('ideal-display-habits-list');
+const idealHabitsLabel = document.getElementById('ideal-habits-label');
 
 const editIdealBtn = document.getElementById('edit-ideal-btn');
 const clearIdealBtn = document.getElementById('clear-ideal-btn');
@@ -625,12 +626,8 @@ function renderIdealDayView() {
     editIdealBtn.classList.remove('hidden');
     if (clearIdealBtn) clearIdealBtn.classList.add('hidden');
 
-    // Display Vision Text
-    if (idealDayData.vision && idealDayData.vision.trim() !== '') {
-      idealDisplayVision.textContent = idealDayData.vision;
-    } else {
-      idealDisplayVision.textContent = 'No vision added yet. Tap ✏️ to create your ideal day!';
-    }
+    // Display Vision Text (Empty if none)
+    idealDisplayVision.textContent = idealDayData.vision || '';
 
     // Display Photo
     if (idealDayData.photo) {
@@ -645,15 +642,16 @@ function renderIdealDayView() {
     const selectedList = idealDayData.selectedHabits || [];
     const matchedHabits = habits.filter(h => selectedList.includes(h.name));
 
-    if (matchedHabits.length === 0) {
-      idealDisplayHabitsList.innerHTML = `<p style="color: #4E6B51; font-size: 13px;">No habits selected for your ideal day yet.</p>`;
-    } else {
+    if (matchedHabits.length > 0) {
+      if (idealHabitsLabel) idealHabitsLabel.classList.remove('hidden');
       matchedHabits.forEach(habit => {
         const item = document.createElement('div');
         item.className = 'ideal-display-habit-item';
         item.innerHTML = `<span>${habit.icon}</span> <span>${escapeHtml(habit.name)}</span>`;
         idealDisplayHabitsList.appendChild(item);
       });
+    } else {
+      if (idealHabitsLabel) idealHabitsLabel.classList.add('hidden');
     }
   }
 }
