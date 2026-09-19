@@ -1,4 +1,4 @@
-// --- DATA STORAGE & GLOBAL STATE ---
+// --- GLOBAL DATA ---
 let habits = JSON.parse(localStorage.getItem('daily_habits')) || [];
 let todos = JSON.parse(localStorage.getItem('daily_todos')) || [];
 let idealDayData = JSON.parse(localStorage.getItem('ideal_day_data')) || {
@@ -11,59 +11,13 @@ let selectedEmoji = '🌙';
 let selectedDays = [];
 let activeTab = 'all'; 
 let activeTodoTab = 'daily'; 
-
 let selectedDate = new Date();
 
-// --- DOM ELEMENTS: HABITS ---
-const activeHabitList = document.getElementById('active-habit-list');
-const completedHabitList = document.getElementById('completed-habit-list');
-const completedSection = document.getElementById('completed-section');
+// --- SWITCH VIEW FUNCTION (GLOBAL) ---
+window.switchView = function(targetViewId) {
+  const navTabs = document.querySelectorAll('.nav-tab');
+  const tabViews = document.querySelectorAll('.tab-view');
 
-const dateDisplayLabel = document.getElementById('date-display-label');
-const prevDateBtn = document.getElementById('prev-date-btn');
-const nextDateBtn = document.getElementById('next-date-btn');
-const todayShortcutBtn = document.getElementById('today-shortcut-btn');
-
-const modal = document.getElementById('habit-modal');
-const modalTitle = document.getElementById('modal-title');
-const editHabitIdInput = document.getElementById('edit-habit-id');
-const openModalBtn = document.getElementById('open-modal-btn');
-const cancelBtn = document.getElementById('cancel-btn');
-const saveHabitBtn = document.getElementById('save-habit-btn');
-const deleteHabitBtn = document.getElementById('delete-habit-btn');
-
-const nameInput = document.getElementById('habit-name');
-const targetInput = document.getElementById('habit-target');
-const freqSelect = document.getElementById('habit-freq');
-const daySelector = document.getElementById('day-selector');
-const dayBtns = document.querySelectorAll('.day-opt');
-const emojiOptions = document.querySelectorAll('.emoji-opt');
-
-const tabBtns = document.querySelectorAll('.tab-btn');
-
-// --- DOM ELEMENTS: NAVIGATION VIEWS ---
-const navTabs = document.querySelectorAll('.nav-tab');
-const tabViews = document.querySelectorAll('.tab-view');
-
-// --- DOM ELEMENTS: TO-DO VIEW ---
-const todoTypeBtns = document.querySelectorAll('.todo-type-btn');
-const todoInput = document.getElementById('todo-input');
-const addTodoBtn = document.getElementById('add-todo-btn');
-const todoList = document.getElementById('todo-list');
-const todoCompletedSection = document.getElementById('todo-completed-section');
-const todoCompletedList = document.getElementById('todo-completed-list');
-
-// --- DOM ELEMENTS: IDEAL DAY VIEW ---
-const idealVisionText = document.getElementById('ideal-vision-text');
-const idealPhotoInput = document.getElementById('ideal-photo-input');
-const uploadPhotoBtn = document.getElementById('upload-photo-btn');
-const removePhotoBtn = document.getElementById('remove-photo-btn');
-const idealPhotoPreview = document.getElementById('ideal-photo-preview');
-const idealPhotoImg = document.getElementById('ideal-photo-img');
-const idealHabitChecklist = document.getElementById('ideal-habit-checklist');
-
-// ==================== BOTTOM NAV VIEW SWITCHING ====================
-function switchView(targetViewId) {
   navTabs.forEach(tab => {
     if (tab.getAttribute('data-view') === targetViewId) {
       tab.classList.add('active');
@@ -87,20 +41,51 @@ function switchView(targetViewId) {
   } else if (targetViewId === 'view-habits') {
     renderHabits();
   }
-}
+};
 
-navTabs.forEach(tab => {
-  tab.addEventListener('click', (e) => {
-    e.preventDefault();
-    const targetViewId = tab.getAttribute('data-view');
-    if (targetViewId) {
-      switchView(targetViewId);
-    }
-  });
-});
+// DOM Elements: Habits
+const activeHabitList = document.getElementById('active-habit-list');
+const completedHabitList = document.getElementById('completed-habit-list');
+const completedSection = document.getElementById('completed-section');
+const dateDisplayLabel = document.getElementById('date-display-label');
+const prevDateBtn = document.getElementById('prev-date-btn');
+const nextDateBtn = document.getElementById('next-date-btn');
+const todayShortcutBtn = document.getElementById('today-shortcut-btn');
 
-// ==================== HABITS MODULE ====================
+const modal = document.getElementById('habit-modal');
+const modalTitle = document.getElementById('modal-title');
+const editHabitIdInput = document.getElementById('edit-habit-id');
+const openModalBtn = document.getElementById('open-modal-btn');
+const cancelBtn = document.getElementById('cancel-btn');
+const saveHabitBtn = document.getElementById('save-habit-btn');
+const deleteHabitBtn = document.getElementById('delete-habit-btn');
 
+const nameInput = document.getElementById('habit-name');
+const targetInput = document.getElementById('habit-target');
+const freqSelect = document.getElementById('habit-freq');
+const daySelector = document.getElementById('day-selector');
+const dayBtns = document.querySelectorAll('.day-opt');
+const emojiOptions = document.querySelectorAll('.emoji-opt');
+const tabBtns = document.querySelectorAll('.tab-btn');
+
+// DOM Elements: To-Do
+const todoTypeBtns = document.querySelectorAll('.todo-type-btn');
+const todoInput = document.getElementById('todo-input');
+const addTodoBtn = document.getElementById('add-todo-btn');
+const todoList = document.getElementById('todo-list');
+const todoCompletedSection = document.getElementById('todo-completed-section');
+const todoCompletedList = document.getElementById('todo-completed-list');
+
+// DOM Elements: Ideal Day
+const idealVisionText = document.getElementById('ideal-vision-text');
+const idealPhotoInput = document.getElementById('ideal-photo-input');
+const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+const removePhotoBtn = document.getElementById('remove-photo-btn');
+const idealPhotoPreview = document.getElementById('ideal-photo-preview');
+const idealPhotoImg = document.getElementById('ideal-photo-img');
+const idealHabitChecklist = document.getElementById('ideal-habit-checklist');
+
+// --- HABITS MODULE ---
 function getDailyKey(targetDate = selectedDate) {
   const year = targetDate.getFullYear();
   const month = String(targetDate.getMonth() + 1).padStart(2, '0');
@@ -214,7 +199,7 @@ function resetForm() {
   deleteHabitBtn.classList.add('hidden');
 }
 
-function openEditModal(index) {
+window.openEditModal = function(index) {
   const habit = habits[index];
   if (!habit) return;
 
@@ -244,7 +229,7 @@ function openEditModal(index) {
   selectEmoji(habit.icon || '🌙');
   deleteHabitBtn.classList.remove('hidden');
   modal.classList.remove('hidden');
-}
+};
 
 function renderHabits() {
   if (!activeHabitList || !completedHabitList) return;
@@ -309,7 +294,7 @@ function renderHabits() {
   }
 }
 
-function toggleHabit(index) {
+window.toggleHabit = function(index) {
   const habit = habits[index];
   if (!habit.logs) habit.logs = {};
   if (!habit.completedDates) habit.completedDates = [];
@@ -351,9 +336,8 @@ function toggleHabit(index) {
     saveToStorage();
     renderHabits();
   }
-}
+};
 
-// Habits Event Listeners
 if (prevDateBtn) prevDateBtn.addEventListener('click', () => { selectedDate.setDate(selectedDate.getDate() - 1); renderHabits(); });
 if (nextDateBtn) nextDateBtn.addEventListener('click', () => { selectedDate.setDate(selectedDate.getDate() + 1); renderHabits(); });
 if (todayShortcutBtn) todayShortcutBtn.addEventListener('click', () => { selectedDate = new Date(); renderHabits(); });
@@ -449,8 +433,7 @@ if (saveHabitBtn) {
   });
 }
 
-// ==================== TO-DO MODULE ====================
-
+// --- TO-DO MODULE ---
 function saveTodos() {
   localStorage.setItem('daily_todos', JSON.stringify(todos));
 }
@@ -518,19 +501,19 @@ function addTodo() {
   renderTodos();
 }
 
-function toggleTodo(index) {
+window.toggleTodo = function(index) {
   todos[index].completed = !todos[index].completed;
   saveTodos();
   renderTodos();
-}
+};
 
-function deleteTodo(index) {
+window.deleteTodo = function(index) {
   todos.splice(index, 1);
   saveTodos();
   renderTodos();
-}
+};
 
-function startEditingTodo(index) {
+window.startEditingTodo = function(index) {
   const textSpan = document.getElementById(`todo-text-${index}`);
   if (!textSpan) return;
 
@@ -556,7 +539,7 @@ function startEditingTodo(index) {
       if (e.key === 'Enter') saveEdit();
     });
   }
-}
+};
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -579,8 +562,7 @@ if (todoInput) {
   });
 }
 
-// ==================== IDEAL DAY MODULE ====================
-
+// --- IDEAL DAY MODULE ---
 function saveIdealDayData() {
   localStorage.setItem('ideal_day_data', JSON.stringify(idealDayData));
 }
@@ -617,7 +599,7 @@ function renderIdealDayView() {
   });
 }
 
-function toggleIdealHabit(habitName) {
+window.toggleIdealHabit = function(habitName) {
   if (!idealDayData.selectedHabits) idealDayData.selectedHabits = [];
   
   if (idealDayData.selectedHabits.includes(habitName)) {
@@ -626,7 +608,7 @@ function toggleIdealHabit(habitName) {
     idealDayData.selectedHabits.push(habitName);
   }
   saveIdealDayData();
-}
+};
 
 if (idealVisionText) {
   idealVisionText.addEventListener('input', () => {
@@ -665,7 +647,7 @@ if (removePhotoBtn) {
   });
 }
 
-// ==================== INITIALIZATION ====================
+// Initial render
 renderHabits();
 renderTodos();
 renderIdealDayView();
