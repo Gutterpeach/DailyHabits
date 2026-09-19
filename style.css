@@ -475,7 +475,7 @@ h1 {
 .ideal-day-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px; /* Clean gap between cards */
 }
 
 .ideal-card {
@@ -571,7 +571,10 @@ h1 {
   line-height: 1.5;
   color: #2E4A31;
   white-space: pre-wrap;
-  margin-bottom: 12px;
+}
+
+.ideal-text-display:empty {
+  display: none;
 }
 
 .ideal-display-habit-item {
