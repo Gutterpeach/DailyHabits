@@ -15,17 +15,13 @@ body {
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  padding: 20px 20px 80px 20px; /* Added extra bottom padding for bottom nav */
+  padding: 20px 20px 80px 20px;
 }
 
 .app-container {
   width: 100%;
   max-width: 480px;
-}
-
-/* Views Management */
-.tab-view.hidden {
-  display: none;
+  padding-bottom: 90px;
 }
 
 header {
@@ -390,19 +386,21 @@ h1 {
   display: none;
 }
 
-/* ==================== BOTTOM NAVIGATION BAR ==================== */
+/* BOTTOM NAVIGATION BAR */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   justify-content: space-around;
-  padding: 8px 0;
+  padding: 10px 0;
   border-top: 1px solid rgba(46, 74, 49, 0.15);
-  z-index: 1000;
+  z-index: 99999;
+  touch-action: manipulation;
 }
 
 .nav-tab {
@@ -414,9 +412,14 @@ h1 {
   gap: 2px;
   color: #4E6B51;
   cursor: pointer;
-  padding: 4px 16px;
+  padding: 6px 16px;
   border-radius: 8px;
-  transition: color 0.2s ease, transform 0.1s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-tab * {
+  pointer-events: none;
 }
 
 .nav-tab .nav-icon {
@@ -433,7 +436,7 @@ h1 {
   font-weight: bold;
 }
 
-/* ==================== TO-DO VIEW STYLES ==================== */
+/* TO-DO VIEW STYLES */
 .todo-input-group {
   display: flex;
   gap: 8px;
@@ -460,7 +463,6 @@ h1 {
   border-radius: 12px;
 }
 
-/* Inline Edit Input for To-Do */
 .todo-edit-input {
   flex: 1;
   padding: 6px 10px;
@@ -469,7 +471,7 @@ h1 {
   font-size: 15px;
 }
 
-/* ==================== IDEAL DAY STYLES ==================== */
+/* IDEAL DAY STYLES */
 .ideal-day-container {
   display: flex;
   flex-direction: column;
@@ -552,4 +554,34 @@ h1 {
   font-size: 14px;
   color: #2E4A31;
   font-weight: 500;
+}
+
+/* IDEAL DAY HEADER ACTIONS & VIEW MODE */
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-btn.danger-icon {
+  background-color: #C85A54;
+}
+
+.ideal-text-display {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #2E4A31;
+  white-space: pre-wrap;
+  margin-bottom: 12px;
+}
+
+.ideal-display-habit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(46, 74, 49, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2E4A31;
+  font-weight: 600;
 }
