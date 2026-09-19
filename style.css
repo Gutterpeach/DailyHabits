@@ -141,7 +141,6 @@ h1 {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-/* Slide animation for completion */
 .habit-card.slide-out, .todo-card.slide-out {
   transform: translateX(100%);
   opacity: 0;
@@ -281,12 +280,6 @@ h1 {
   font-weight: 600;
   color: #2E4A31;
   margin-top: 4px;
-}
-
-.field-sublabel {
-  font-size: 12px;
-  color: #4E6B51;
-  margin-bottom: 8px;
 }
 
 .modal-content input, .modal-content select {
@@ -469,122 +462,4 @@ h1 {
   border: 1px solid #2E4A31;
   border-radius: 6px;
   font-size: 15px;
-}
-
-/* IDEAL DAY STYLES */
-.ideal-day-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Clean gap between cards */
-}
-
-.ideal-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ideal-card textarea {
-  width: 100%;
-  border: 1px solid #6E9671;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 14px;
-  color: #2E4A31;
-  resize: vertical;
-}
-
-.photo-upload-wrapper {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.hidden-file-input {
-  display: none;
-}
-
-.photo-preview-container {
-  margin-top: 8px;
-  border-radius: 12px;
-  overflow: hidden;
-  max-height: 220px;
-}
-
-.photo-preview-container img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-.photo-preview-container.hidden {
-  display: none;
-}
-
-.ideal-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ideal-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 10px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.ideal-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #2E4A31;
-  cursor: pointer;
-}
-
-.ideal-item span {
-  font-size: 14px;
-  color: #2E4A31;
-  font-weight: 500;
-}
-
-/* IDEAL DAY HEADER ACTIONS & VIEW MODE */
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.add-btn.danger-icon {
-  background-color: #C85A54;
-}
-
-.ideal-text-display {
-  font-size: 15px;
-  line-height: 1.5;
-  color: #2E4A31;
-  white-space: pre-wrap;
-}
-
-.ideal-text-display:empty {
-  display: none;
-}
-
-.ideal-display-habit-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(46, 74, 49, 0.1);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #2E4A31;
-  font-weight: 600;
 }
